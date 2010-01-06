@@ -4,7 +4,7 @@
 #
 
 # Characters considered part of a "word" when double clicking
-word_chars = -A-Za-z0-9/:.?&@~_=
+word_chars = -A-Za-z0-9/:.?&@~_=%+
 
 # Lines of scrollback
 scrollback = 2000
@@ -14,6 +14,12 @@ scrollbar = 0
 
 # Default font
 font = Bitstream Vera Sans Mono 8
+
+# Audible bell
+audible_bell = true
+
+# Visible bell
+visible_bell = false
 
 # Foreground/background color
 foreground = #fff

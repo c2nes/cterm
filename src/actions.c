@@ -53,6 +53,8 @@ static void cterm_set_vte_properties(CTerm* term, VteTerminal* vte) {
                             term->config.colors, 16);
 
     vte_terminal_set_scrollback_lines(vte, term->config.scrollback);
+    vte_terminal_set_audible_bell(vte, term->config.audible_bell);
+    vte_terminal_set_visible_bell(vte, term->config.visible_bell);
 
     if(term->config.transparent) {
         vte_terminal_set_background_tint_color(vte, &(term->config.background));

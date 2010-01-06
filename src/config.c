@@ -60,9 +60,13 @@ void cterm_init_config_defaults(CTerm* term) {
     /* Default font */
     term->config.font = NULL;
 
+    /* Disable audible and visible bell */
+    term->config.audible_bell = false;
+    term->config.visible_bell = false;
+
     /* Initialize colors */
     cterm_parse_color("#000", &(term->config.background));
-    cterm_parse_color("#fff", &(term->config.foreground));
+    cterm_parse_color("#FFF", &(term->config.foreground));
     cterm_parse_color("#000", &(term->config.colors[0]));
     cterm_parse_color("#A00", &(term->config.colors[1]));
     cterm_parse_color("#0A0", &(term->config.colors[2]));
@@ -148,6 +152,10 @@ static bool cterm_config_process_line(CTerm* term, const char* option, const cha
         }
     } else if(strcmp(option, "font") == 0) {
         term->config.font = strdup(value);
+    } else if(strcmp(option, "audible_bell") == 0) {
+        term->config.audible_bell = cterm_config_true_value(value);
+    } else if(strcmp(option, "visible_bell") == 0) {
+        term->config.visible_bell = cterm_config_true_value(value);
 
         /* Transparency options */
     } else if(strcmp(option, "transparent") == 0) {

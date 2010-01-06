@@ -43,6 +43,9 @@ typedef struct {
         GdkColor foreground;
         GdkColor background;
         GdkColor colors[16];
+
+        bool audible_bell;
+        bool visible_bell;
     } config;
 } CTerm;
 
