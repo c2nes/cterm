@@ -3,6 +3,7 @@
 
 int main(int argc, char** argv) {
     CTerm term;
+    GtkRcStyle* style;
 
     /* Initialize GTK */
     gtk_init(&argc, &argv);
@@ -22,7 +23,16 @@ int main(int argc, char** argv) {
     gtk_notebook_set_scrollable(term.notebook, TRUE);
     gtk_notebook_set_show_tabs(term.notebook, FALSE);
     gtk_notebook_set_show_border(term.notebook, FALSE);
+    g_object_set(G_OBJECT(term.notebook), "show-border", FALSE, NULL);
     g_object_set(G_OBJECT(term.notebook), "homogeneous", TRUE, NULL);
+
+    /* Disable all borders on notebook */
+    style = gtk_rc_style_new();
+    style->xthickness = 0;
+    style->ythickness = 0;
+    gtk_widget_modify_style((GtkWidget*)term.notebook, style);
+
+    /* Connect signals */
     g_signal_connect(term.notebook, "switch-page", G_CALLBACK(cterm_ontabchange), &term);
     
     /* Open initial tab */
