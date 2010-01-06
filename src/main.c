@@ -21,6 +21,7 @@ int main(int argc, char** argv) {
     gtk_window_set_title(term.window, "cterm");
     gtk_notebook_set_scrollable(term.notebook, TRUE);
     gtk_notebook_set_show_tabs(term.notebook, FALSE);
+    gtk_notebook_set_show_border(term.notebook, FALSE);
     g_object_set(G_OBJECT(term.notebook), "homogeneous", TRUE, NULL);
     g_signal_connect(term.notebook, "switch-page", G_CALLBACK(cterm_ontabchange), &term);
     
