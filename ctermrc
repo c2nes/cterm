@@ -1,0 +1,57 @@
+
+#
+# Place this file in ~/.ctermrc to be read on start up
+#
+
+# Characters considered part of a "word" when double clicking
+word_chars = -A-Za-z0-9/:.?&@~_=
+
+# Lines of scrollback
+scrollback = 2000
+
+# Enable scrollbar
+scrollbar = 0
+
+# Default font
+font = Bitstream Vera Sans Mono 8
+
+# Foreground/background color
+foreground = #fff
+background = #000
+
+# Transparency
+transparent = false
+opacity = 80
+
+# Palette for output
+color_0 = #000
+color_1 = #a00
+color_2 = #0a0
+color_3 = #a50
+color_4 = #00a
+color_5 = #a0a
+color_6 = #0aa
+color_7 = #aaa
+color_8 = #555
+color_9 = #f55
+color_10 = #5f5
+color_11 = #ff5
+color_12 = #55f
+color_13 = #f5f
+color_14 = #5ff
+color_15 = #fff
+
+# Default key bindings
+key_open_tab = <Alt><Shift>t
+key_close_tab = <Alt><Shift>q
+key_reload = <Alt><Ctrl><Shift>r
+key_tab_1 = <Ctrl>1
+key_tab_2 = <Ctrl>2
+key_tab_3 = <Ctrl>3
+key_tab_4 = <Ctrl>4
+key_tab_5 = <Ctrl>5
+key_tab_6 = <Ctrl>6
+key_tab_7 = <Ctrl>7
+key_tab_8 = <Ctrl>8
+key_tab_9 = <Ctrl>9
+key_tab_10 = <Ctrl>0
