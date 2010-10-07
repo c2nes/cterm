@@ -60,6 +60,9 @@ void cterm_init_config_defaults(CTerm* term) {
     /* Default font */
     term->config.font = NULL;
 
+    /* Default (no) external program */
+    term->config.external_program = NULL;
+
     /* Disable audible and visible bell */
     term->config.audible_bell = false;
     term->config.visible_bell = false;
@@ -152,6 +155,8 @@ static bool cterm_config_process_line(CTerm* term, const char* option, const cha
         }
     } else if(strcmp(option, "font") == 0) {
         term->config.font = strdup(value);
+    } else if(strcmp(option, "external_program") == 0) {
+        term->config.external_program = strdup(value);
     } else if(strcmp(option, "audible_bell") == 0) {
         term->config.audible_bell = cterm_config_true_value(value);
     } else if(strcmp(option, "visible_bell") == 0) {
@@ -229,6 +234,8 @@ static bool cterm_config_process_line(CTerm* term, const char* option, const cha
         cterm_register_accel(term, value, G_CALLBACK(cterm_close_tab));
     } else if(strcmp(option, "key_reload") == 0) {
         cterm_register_accel(term, value, G_CALLBACK(cterm_reload));
+    } else if(strcmp(option, "key_run") == 0) {
+        cterm_register_accel(term, value, G_CALLBACK(cterm_run_external));
         
         /* Unknown option */
     } else {

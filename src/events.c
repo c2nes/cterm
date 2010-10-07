@@ -7,6 +7,16 @@ gboolean cterm_onfocus(GtkWidget* w, GdkEventFocus* e, gpointer data) {
     return FALSE;
 }
 
+gboolean cterm_onclick(GtkWidget* w, GdkEventButton* e, gpointer data) {
+    CTerm* term = (CTerm*) data;
+
+    if(e->button == 3) {
+        cterm_run_external(term);
+    }
+
+    return FALSE;
+}
+
 void cterm_onbeep(VteTerminal * vte, gpointer data) {
     CTerm* term = (CTerm*) data;
     gtk_window_set_urgency_hint(term->window, FALSE);

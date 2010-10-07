@@ -46,6 +46,8 @@ typedef struct {
 
         bool audible_bell;
         bool visible_bell;
+
+        char* external_program;
     } config;
 } CTerm;
 
@@ -68,6 +70,7 @@ void cterm_switch_to_tab_10(CTerm* term);
 void cterm_open_tab(CTerm* term);
 void cterm_close_tab(CTerm* term);
 void cterm_reload(CTerm* term);
+void cterm_run_external(CTerm* term);
 
 /* config.c */
 void cterm_register_accel(CTerm* term, const char* keyspec, GCallback callback_func);
@@ -76,6 +79,7 @@ void cterm_reread_config(CTerm* term);
 
 /* events.c */
 gboolean cterm_onfocus(GtkWidget* w, GdkEventFocus* e, gpointer data);
+gboolean cterm_onclick(GtkWidget* w, GdkEventButton* e, gpointer data);
 void cterm_onbeep(VteTerminal * vte, gpointer data);
 void cterm_onchildexit(VteTerminal* vte, gpointer data);
 void cterm_ontabchange(GtkNotebook* notebook, GtkNotebookPage* page, guint page_num, gpointer data);

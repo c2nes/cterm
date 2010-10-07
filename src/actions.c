@@ -98,6 +98,7 @@ void cterm_open_tab(CTerm* term) {
     g_signal_connect(new_vte, "child-exited", G_CALLBACK(cterm_onchildexit), term);
     g_signal_connect(new_vte, "focus-in-event", G_CALLBACK(cterm_onfocus), term);
     g_signal_connect(new_vte, "window-title-changed", G_CALLBACK(cterm_ontitlechange), term);
+    g_signal_connect(new_vte, "button-release-event", G_CALLBACK(cterm_onclick), term);
 
     /* Construct tab title */
     title = cterm_new_label("cterm");
@@ -144,4 +145,34 @@ void cterm_reload(CTerm* term) {
         gtk_scrolled_window_set_policy((GtkScrolledWindow*)gtk_notebook_get_nth_page(term->notebook, i),
                                        GTK_POLICY_NEVER, term->config.scrollbar);
     }    
+}
+
+void cterm_run_external(CTerm* term) {
+    gint p = gtk_notebook_get_current_page(term->notebook);
+    VteTerminal* vte = cterm_get_vte(term, p);
+    char* data;
+    int fp[2];
+
+    if(vte_terminal_get_has_selection(vte) && term->config.external_program) {
+        vte_terminal_copy_primary(vte);
+        data = gtk_clipboard_wait_for_text(gtk_clipboard_get(GDK_SELECTION_PRIMARY));
+        if(data) {
+            pipe(fp);
+            
+            if(fork() == 0) {
+                /* Parent */
+                close(fp[1]);
+                dup2(fp[0], STDIN_FILENO);
+                execlp(term->config.external_program, term->config.external_program, NULL);
+
+                perror("Could not open program");
+                _exit(-1);
+            }
+
+            close(fp[0]);
+            write(fp[1], data, strlen(data) + 1);
+            g_free(data);
+            close(fp[1]);
+        }
+    }
 }

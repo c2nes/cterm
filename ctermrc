@@ -29,6 +29,10 @@ background = #000
 transparent = false
 opacity = 80
 
+# Run this program and pass the selected text to it when key_run is actived or
+# the left mouse button is clicked
+external_program = cterm_run
+
 # Palette for output
 color_0 = #000
 color_1 = #a00
@@ -51,6 +55,7 @@ color_15 = #fff
 key_open_tab = <Alt><Shift>t
 key_close_tab = <Alt><Shift>q
 key_reload = <Alt><Ctrl><Shift>r
+key_run = <Ctrl>Return
 key_tab_1 = <Ctrl>1
 key_tab_2 = <Ctrl>2
 key_tab_3 = <Ctrl>3
