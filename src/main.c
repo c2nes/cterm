@@ -20,9 +20,12 @@ int main(int argc, char** argv) {
 
     /* Set widget properties */
     gtk_window_set_title(term.window, "cterm");
-    gtk_notebook_set_scrollable(term.notebook, TRUE);
+    gtk_widget_set_size_request(GTK_WIDGET(term.window), 600, 400);
+
+    gtk_notebook_set_scrollable(term.notebook, FALSE);
     gtk_notebook_set_show_tabs(term.notebook, FALSE);
     gtk_notebook_set_show_border(term.notebook, FALSE);
+
     g_object_set(G_OBJECT(term.notebook), "show-border", FALSE, NULL);
     g_object_set(G_OBJECT(term.notebook), "homogeneous", TRUE, NULL);
 
@@ -30,22 +33,23 @@ int main(int argc, char** argv) {
     style = gtk_rc_style_new();
     style->xthickness = 0;
     style->ythickness = 0;
-    gtk_widget_modify_style((GtkWidget*)term.notebook, style);
+    gtk_widget_modify_style(GTK_WIDGET (term.notebook), style);
 
     /* Connect signals */
     g_signal_connect(term.notebook, "switch-page", G_CALLBACK(cterm_ontabchange), &term);
     
-    /* Open initial tab */
-    cterm_open_tab(&term);
-
     /* Build main window */
-    gtk_container_add((GtkContainer*)term.window, (GtkWidget*)term.notebook);
+    gtk_container_add(GTK_CONTAINER (term.window), GTK_WIDGET (term.notebook));
 
     /* Exit on window close */
     g_signal_connect(term.window, "delete-event", gtk_main_quit, NULL);
 
+    /* Open initial tab */
+    cterm_open_tab(&term);
+
     /* Show window and enter main event loop */
-    gtk_widget_show_all((GtkWidget*)term.window);
+    gtk_widget_show_all(GTK_WIDGET (term.window));
+
     gtk_main();
     return 0;
 }

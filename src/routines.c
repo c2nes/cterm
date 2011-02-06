@@ -1,10 +1,23 @@
 
 #include "cterm.h"
 
+#include <assert.h>
+
 VteTerminal* cterm_get_vte(CTerm* term, gint page_num) {
-    GtkWidget* scroll = gtk_notebook_get_nth_page(term->notebook, page_num);
-    VteTerminal* vte = (VteTerminal*) gtk_bin_get_child((GtkBin*)scroll);
-    
+    GtkWidget* box = gtk_notebook_get_nth_page(term->notebook, page_num);
+    GList* children = gtk_container_get_children(GTK_CONTAINER (box));
+    GList* node = children;
+    VteTerminal* vte;
+
+    while(node != NULL) {
+        vte = VTE_TERMINAL (node->data);
+        if(VTE_IS_TERMINAL (vte)) {
+            break;
+        }
+        node = node->next;
+    }
+
+    g_list_free(children);
     return vte;
 }
 

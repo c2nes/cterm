@@ -45,7 +45,8 @@ void cterm_switch_to_tab_10(CTerm* term) {
 
 static void cterm_set_vte_properties(CTerm* term, VteTerminal* vte) {
     if(term->config.word_chars) {
-        vte_terminal_set_word_chars(vte, term->config.word_chars);
+      
+  vte_terminal_set_word_chars(vte, term->config.word_chars);
     }
     
     vte_terminal_set_colors(vte, &(term->config.foreground),
@@ -69,8 +70,10 @@ static void cterm_set_vte_properties(CTerm* term, VteTerminal* vte) {
 
 void cterm_open_tab(CTerm* term) {
     VteTerminal* new_vte;
-    GtkWidget* scroll;
+    GtkWidget* box;
+    GtkWidget* scrollbar;
     GtkWidget* title;
+    GdkGeometry hints;
     pid_t* new_pid = malloc(sizeof(pid_t));
 
     term->count++;
@@ -100,23 +103,37 @@ void cterm_open_tab(CTerm* term) {
     g_signal_connect(new_vte, "window-title-changed", G_CALLBACK(cterm_ontitlechange), term);
     g_signal_connect(new_vte, "button-release-event", G_CALLBACK(cterm_onclick), term);
 
+    /* Set geometry information */
+    hints.base_width = new_vte->char_width;
+    hints.base_height = new_vte->char_height;
+    hints.min_width = new_vte->char_width;
+    hints.min_height = new_vte->char_height;
+    hints.width_inc = new_vte->char_width;
+    hints.height_inc = new_vte->char_height;
+    gtk_window_set_geometry_hints (GTK_WINDOW (term->window), GTK_WIDGET (new_vte), &hints,
+                                   GDK_HINT_RESIZE_INC | GDK_HINT_MIN_SIZE | GDK_HINT_BASE_SIZE);
+
     /* Construct tab title */
     title = cterm_new_label("cterm");
 
-    /* Create scrolled terminal widget */
-    scroll = gtk_scrolled_window_new(NULL, NULL);
-    gtk_scrolled_window_set_policy((GtkScrolledWindow*)scroll, GTK_POLICY_NEVER, term->config.scrollbar);
-    gtk_container_add((GtkContainer*)scroll, (GtkWidget*)new_vte);
-    gtk_widget_show_all(scroll);
+    /* Create scrollbar for widget */
+    scrollbar = gtk_vscrollbar_new(new_vte->adjustment);
+
+    box = gtk_hbox_new(false, 0);
+    gtk_box_pack_start (GTK_BOX (box), GTK_WIDGET (new_vte), TRUE, TRUE, 0);
+    if(term->config.scrollbar == GTK_POLICY_ALWAYS) {
+        gtk_box_pack_start (GTK_BOX (box), scrollbar, FALSE, FALSE, 0);
+    }
+    gtk_widget_show_all(box);
 
     /* Add to notebook */
-    gtk_notebook_append_page(term->notebook, scroll, title);
+    gtk_notebook_append_page(term->notebook, GTK_WIDGET (box), title);
+    gtk_notebook_set_tab_reorderable(term->notebook, GTK_WIDGET (box), TRUE);
+    gtk_notebook_set_tab_label_packing(term->notebook, GTK_WIDGET (box), TRUE, TRUE, GTK_PACK_START);
     gtk_notebook_set_current_page(term->notebook, term->count - 1);
-    gtk_notebook_set_tab_reorderable(term->notebook, scroll, TRUE);
-    gtk_notebook_set_tab_label_packing(term->notebook, scroll, TRUE, TRUE, GTK_PACK_START);
 
     /* Place focus in VTE */
-    gtk_widget_grab_focus((GtkWidget*)new_vte);
+    gtk_widget_grab_focus(GTK_WIDGET (new_vte));
 
     if(term->count == 2) {
         gtk_notebook_set_show_tabs(term->notebook, TRUE);
@@ -132,6 +149,11 @@ void cterm_close_tab(CTerm* term) {
 
 void cterm_reload(CTerm* term) {
     VteTerminal* vte;
+    GtkWidget* scrollbar;
+    GtkWidget* box;
+    GList* children;
+    GList* node;
+    bool has_scrollbar;
 
     printf("rereading configuration\n");
 
@@ -140,10 +162,32 @@ void cterm_reload(CTerm* term) {
 
     /* Reconfigure all terminals */
     for(int i = 0; i < term->count; i++) {
-        vte = cterm_get_vte(term, i);
-        cterm_set_vte_properties(term, vte);
-        gtk_scrolled_window_set_policy((GtkScrolledWindow*)gtk_notebook_get_nth_page(term->notebook, i),
-                                       GTK_POLICY_NEVER, term->config.scrollbar);
+        box = gtk_notebook_get_nth_page(term->notebook, i);
+        children = gtk_container_get_children(GTK_CONTAINER (box));
+        node = children;
+        has_scrollbar = false;
+        vte = NULL;
+
+        while(node != NULL) {
+            if(VTE_IS_TERMINAL (node->data)) {
+                vte = VTE_TERMINAL (node->data);
+                cterm_set_vte_properties(term, vte);
+            } else if(GTK_IS_VSCROLLBAR (node->data)) {
+                if(term->config.scrollbar == GTK_POLICY_NEVER) {
+                    gtk_container_remove(GTK_CONTAINER (box), GTK_WIDGET (node->data));
+                }
+                has_scrollbar = true;
+            }
+            node = node->next;
+        }
+
+        if(has_scrollbar == false && term->config.scrollbar == GTK_POLICY_ALWAYS) {
+            scrollbar = gtk_vscrollbar_new(vte->adjustment);
+            gtk_box_pack_start (GTK_BOX (box), scrollbar, FALSE, FALSE, 0);
+            gtk_widget_show_all(box);
+        }
+
+        g_list_free(children);
     }    
 }
 
