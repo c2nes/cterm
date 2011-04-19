@@ -22,6 +22,12 @@ int main(int argc, char** argv) {
     gtk_window_set_title(term.window, "cterm");
     gtk_widget_set_size_request(GTK_WIDGET(term.window), 600, 400);
 
+    /* Optionally hide window from taskbar */
+    if(getenv("CTERM_HIDE") != NULL) {
+        gtk_window_set_skip_taskbar_hint(term.window, true);
+        gtk_window_set_skip_pager_hint(term.window, true);
+    }
+
     gtk_notebook_set_scrollable(term.notebook, FALSE);
     gtk_notebook_set_show_tabs(term.notebook, FALSE);
     gtk_notebook_set_show_border(term.notebook, FALSE);
