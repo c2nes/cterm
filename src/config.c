@@ -15,7 +15,7 @@ void cterm_register_accel(CTerm* term, const char* keyspec, GCallback callback_f
     if(keyspec[0] == '\0') {
         return;
     }
-    
+
     if(term->config.keys == NULL) {
         term->config.keys = gtk_accel_group_new();
     }
@@ -103,7 +103,7 @@ static char* cterm_read_line(FILE* f) {
     char* s = NULL;
     int l = 0;
     int c;
-    
+
     do {
         c = fgetc(f);
         if(c == EOF) {
@@ -230,7 +230,7 @@ static bool cterm_config_process_line(CTerm* term, const char* option, const cha
         cterm_parse_color(value, &(term->config.colors[14]));
     } else if(strcmp(option, "color_15") == 0) {
         cterm_parse_color(value, &(term->config.colors[15]));
-        
+
         /* Key bindings options */
     } else if(strcmp(option, "key_tab_1") == 0) {
         cterm_register_accel(term, value, G_CALLBACK(cterm_switch_to_tab_1));
@@ -266,7 +266,7 @@ static bool cterm_config_process_line(CTerm* term, const char* option, const cha
         fprintf(stderr, "Unknown option '%s' at line %d\n", option, line_num);
         return false;
     }
-    
+
     return true;
 }
 
@@ -287,13 +287,13 @@ void cterm_reread_config(CTerm* term) {
         while((line = cterm_read_line(conf)) != NULL) {
             line_num++;
             cterm_string_strip(line);
-            
+
             /* Comment */
             if(line[0] == '#' || line[0] == '\0') {
                 free(line);
                 continue;
             }
-            
+
             /* Normal line */
             option = line;
             value = strchr(line, '=');
@@ -302,22 +302,22 @@ void cterm_reread_config(CTerm* term) {
                 free(line);
                 continue;
             }
-            
+
             /* Split string */
             *value = '\0';
             value++;
             cterm_string_strip(option);
             cterm_string_strip(value);
-            
+
             /* Process option/value pair */
             if(!cterm_config_process_line(term, option, value, line_num)) {
                 exit(1);
             }
-            
+
             if(strcmp(option, "key_reload") == 0) {
                 registered_reload_key = true;
             }
-            
+
             free(line);
         }
 

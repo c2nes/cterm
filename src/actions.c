@@ -45,10 +45,10 @@ void cterm_switch_to_tab_10(CTerm* term) {
 
 static void cterm_set_vte_properties(CTerm* term, VteTerminal* vte) {
     if(term->config.word_chars) {
-      
+
   vte_terminal_set_word_chars(vte, term->config.word_chars);
     }
-    
+
     vte_terminal_set_colors(vte, &(term->config.foreground),
                             &(term->config.background),
                             term->config.colors, 16);
@@ -80,7 +80,7 @@ void cterm_open_tab(CTerm* term) {
 
     new_vte = (VteTerminal*) vte_terminal_new();
     if(term->config.spawn_args == NULL) {
-        *new_pid = vte_terminal_fork_command(new_vte, NULL, NULL, NULL, 
+        *new_pid = vte_terminal_fork_command(new_vte, NULL, NULL, NULL,
                                              term->config.initial_directory,
                                              0, 0, 0);
     } else {
@@ -188,7 +188,7 @@ void cterm_reload(CTerm* term) {
         }
 
         g_list_free(children);
-    }    
+    }
 }
 
 void cterm_run_external(CTerm* term) {
@@ -202,7 +202,7 @@ void cterm_run_external(CTerm* term) {
         data = gtk_clipboard_wait_for_text(gtk_clipboard_get(GDK_SELECTION_PRIMARY));
         if(data) {
             pipe(fp);
-            
+
             if(fork() == 0) {
                 /* Parent */
                 close(fp[1]);

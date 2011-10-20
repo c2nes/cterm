@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
 
     /* Connect signals */
     g_signal_connect(term.notebook, "switch-page", G_CALLBACK(cterm_ontabchange), &term);
-    
+
     /* Build main window */
     gtk_container_add(GTK_CONTAINER (term.window), GTK_WIDGET (term.notebook));
 

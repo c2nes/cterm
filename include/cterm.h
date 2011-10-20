@@ -27,7 +27,7 @@ typedef struct {
     GtkNotebook* notebook;
     GHashTable* terminal_procs;
     int count;
-    
+
     struct {
         char* file_name;
         GtkAccelGroup* keys;

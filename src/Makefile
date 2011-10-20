@@ -13,5 +13,5 @@ OBJECT_FILES=$(SRC_FILES:.c=.o)
 ../$(BIN_NAME): $(OBJECT_FILES)
 	$(CC) $(CFLAGS) $(VTE_LIBS) $(OBJECT_FILES) -o ../$(BIN_NAME)
 
-%.o: %.c $(INCLUDES) 
+%.o: %.c $(INCLUDES)
 	$(CC) $(CFLAGS) $(VTE_CFLAGS) -c $< -o $@
