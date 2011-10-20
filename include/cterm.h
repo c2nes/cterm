@@ -19,6 +19,9 @@
 
 #define CONFIG_FILE ".ctermrc"
 
+#define CTERM_UNIT_PX 0
+#define CTERM_UNIT_ROWCOL 1
+
 typedef struct {
     GtkWindow* window;
     GtkNotebook* notebook;
@@ -39,6 +42,9 @@ typedef struct {
         float opacity;
 
         char* font;
+        char size_unit;
+        unsigned short initial_width;
+        unsigned short initial_height;
 
         GdkColor foreground;
         GdkColor background;

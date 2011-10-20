@@ -18,9 +18,8 @@ int main(int argc, char** argv) {
     cterm_init_config_defaults(&term);
     cterm_reread_config(&term);
 
-    /* Set widget properties */
+    /* Set title */
     gtk_window_set_title(term.window, "cterm");
-    gtk_widget_set_size_request(GTK_WIDGET(term.window), 600, 400);
 
     /* Optionally hide window from taskbar */
     if(getenv("CTERM_HIDE") != NULL) {
@@ -52,6 +51,23 @@ int main(int argc, char** argv) {
 
     /* Open initial tab */
     cterm_open_tab(&term);
+
+    /* Set width and height */
+    if(term.config.size_unit == CTERM_UNIT_PX) {
+        gtk_widget_set_size_request(GTK_WIDGET(term.window),
+                                    term.config.initial_width,
+                                    term.config.initial_height);
+    } else if(term.config.size_unit == CTERM_UNIT_ROWCOL) {
+        VteTerminal* vte = cterm_get_vte(&term, (gint) 0);
+        GtkBorder* border;
+        gtk_widget_style_get(vte, "inner-border", &border, NULL);
+        int char_width = vte_terminal_get_char_width(VTE_TERMINAL(vte));
+        int char_height = vte_terminal_get_char_height(VTE_TERMINAL(vte));
+        gtk_widget_set_size_request(GTK_WIDGET(term.window),
+            char_width*term.config.initial_width + border->left + border->right,
+            char_height*term.config.initial_height + border->top + border->bottom
+        );
+    }
 
     /* Show window and enter main event loop */
     gtk_widget_show_all(GTK_WIDGET (term.window));

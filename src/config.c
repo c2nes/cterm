@@ -4,7 +4,7 @@
 static char* cterm_read_line(FILE* f);
 static void cterm_cleanse_config(CTerm* term);
 static bool cterm_config_true_value(const char* value);
-static bool cterm_config_process_line(CTerm* term, const char* option, const char* value);
+static bool cterm_config_process_line(CTerm* term, const char* option, const char* value, unsigned short line_num);
 
 void cterm_register_accel(CTerm* term, const char* keyspec, GCallback callback_func) {
     guint key;
@@ -65,6 +65,11 @@ void cterm_init_config_defaults(CTerm* term) {
 
     /* Default font */
     term->config.font = NULL;
+
+    /* Default terminal size */
+    term->config.size_unit = CTERM_UNIT_PX;
+    term->config.initial_width = 600;
+    term->config.initial_height = 400;
 
     /* Default (no) external program */
     term->config.external_program = NULL;
@@ -147,7 +152,7 @@ static bool cterm_config_true_value(const char* value) {
     return r;
 }
 
-static bool cterm_config_process_line(CTerm* term, const char* option, const char* value) {
+static bool cterm_config_process_line(CTerm* term, const char* option, const char* value, unsigned short line_num) {
     /* Misc options */
     if(strcmp(option, "word_chars") == 0) {
         term->config.word_chars = strdup(value);
@@ -161,6 +166,19 @@ static bool cterm_config_process_line(CTerm* term, const char* option, const cha
         }
     } else if(strcmp(option, "font") == 0) {
         term->config.font = strdup(value);
+    } else if(strcmp(option, "initial_width") == 0) {
+        term->config.initial_width = atoi(value);
+    } else if(strcmp(option, "initial_height") == 0) {
+        term->config.initial_height = atoi(value);
+    } else if(strcmp(option, "size_unit") == 0) {
+        if(strcmp(value, "px") == 0) {
+            term->config.size_unit = CTERM_UNIT_PX;
+        } else if(strcmp(value, "rowcol") == 0) {
+            term->config.size_unit = CTERM_UNIT_ROWCOL;
+        } else {
+            fprintf(stderr, "Unknown size unit '%s' at line %d\n", value, line_num);
+            return false;
+        }
     } else if(strcmp(option, "external_program") == 0) {
         term->config.external_program = strdup(value);
     } else if(strcmp(option, "audible_bell") == 0) {
@@ -242,9 +260,10 @@ static bool cterm_config_process_line(CTerm* term, const char* option, const cha
         cterm_register_accel(term, value, G_CALLBACK(cterm_reload));
     } else if(strcmp(option, "key_run") == 0) {
         cterm_register_accel(term, value, G_CALLBACK(cterm_run_external));
-        
+
         /* Unknown option */
     } else {
+        fprintf(stderr, "Unknown option '%s' at line %d\n", option, line_num);
         return false;
     }
     
@@ -291,8 +310,8 @@ void cterm_reread_config(CTerm* term) {
             cterm_string_strip(value);
             
             /* Process option/value pair */
-            if(!cterm_config_process_line(term, option, value)) {
-                fprintf(stderr, "Unknown option '%s' at line %d\n", option, line_num);
+            if(!cterm_config_process_line(term, option, value, line_num)) {
+                exit(1);
             }
             
             if(strcmp(option, "key_reload") == 0) {

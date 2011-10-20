@@ -15,6 +15,12 @@ scrollbar = 0
 # Default font
 font = Bitstream Vera Sans Mono 8
 
+# Default terminal size
+# Must be one of "px" or "rowcol"
+size_unit = px
+initial_width = 80
+initial_height = 24
+
 # Audible bell
 audible_bell = true
 
