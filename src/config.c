@@ -4,6 +4,7 @@
 static char* cterm_read_line(FILE* f);
 static void cterm_cleanse_config(CTerm* term);
 static bool cterm_config_true_value(const char* value);
+static enum cterm_length_unit cterm_config_unit_value(const char* value);
 static bool cterm_config_process_line(CTerm* term, const char* option, const char* value, unsigned short line_num);
 
 void cterm_register_accel(CTerm* term, const char* keyspec, GCallback callback_func) {
@@ -67,7 +68,8 @@ void cterm_init_config_defaults(CTerm* term) {
     term->config.font = NULL;
 
     /* Default terminal size */
-    term->config.size_unit = CTERM_UNIT_PX;
+    term->config.width_unit = CTERM_UNIT_PX;
+    term->config.height_unit = CTERM_UNIT_PX;
     term->config.initial_width = 600;
     term->config.initial_height = 400;
 
@@ -152,6 +154,24 @@ static bool cterm_config_true_value(const char* value) {
     return r;
 }
 
+static enum cterm_length_unit cterm_config_unit_value(const char* value) {
+    char* copy = strdup(value);
+
+    /* Skip part number to get to unit part */
+    while (*copy != '\0' && !isalpha(*copy)) {
+        copy++;
+    }
+
+    cterm_string_tolower(copy);
+    if (strcmp(copy, "px") == 0) {
+        return CTERM_UNIT_PX;
+    } else if (strcmp(copy, "char") == 0) {
+        return CTERM_UNIT_CHAR;
+    } else {
+        return -1;
+    }
+}
+
 static bool cterm_config_process_line(CTerm* term, const char* option, const char* value, unsigned short line_num) {
     /* Misc options */
     if(strcmp(option, "word_chars") == 0) {
@@ -168,15 +188,16 @@ static bool cterm_config_process_line(CTerm* term, const char* option, const cha
         term->config.font = strdup(value);
     } else if(strcmp(option, "initial_width") == 0) {
         term->config.initial_width = atoi(value);
+        term->config.width_unit = cterm_config_unit_value(value);
+        if (term->config.width_unit == -1) {
+            fprintf(stderr, "Unknown unit in value '%s' at line %d.\n", value, line_num);
+            return false;
+        }
     } else if(strcmp(option, "initial_height") == 0) {
         term->config.initial_height = atoi(value);
-    } else if(strcmp(option, "size_unit") == 0) {
-        if(strcmp(value, "px") == 0) {
-            term->config.size_unit = CTERM_UNIT_PX;
-        } else if(strcmp(value, "rowcol") == 0) {
-            term->config.size_unit = CTERM_UNIT_ROWCOL;
-        } else {
-            fprintf(stderr, "Unknown size unit '%s' at line %d\n", value, line_num);
+        term->config.height_unit = cterm_config_unit_value(value);
+        if (term->config.height_unit == -1) {
+            fprintf(stderr, "Unknown unit in value '%s' at line %d.\n", value, line_num);
             return false;
         }
     } else if(strcmp(option, "external_program") == 0) {
@@ -263,8 +284,8 @@ static bool cterm_config_process_line(CTerm* term, const char* option, const cha
 
         /* Unknown option */
     } else {
+        /* Ignored for backwards compatability */
         fprintf(stderr, "Unknown option '%s' at line %d\n", option, line_num);
-        return false;
     }
 
     return true;
@@ -275,6 +296,7 @@ void cterm_reread_config(CTerm* term) {
     char *option, *value;
     char* line;
     int line_num = 0;
+    int config_error_count = 0;
     bool registered_reload_key = false;
 
     /* Prepare for configuration */
@@ -311,7 +333,7 @@ void cterm_reread_config(CTerm* term) {
 
             /* Process option/value pair */
             if(!cterm_config_process_line(term, option, value, line_num)) {
-                exit(1);
+                config_error_count++;
             }
 
             if(strcmp(option, "key_reload") == 0) {
@@ -322,6 +344,16 @@ void cterm_reread_config(CTerm* term) {
         }
 
         fclose(conf);
+
+        /* Previous Errors? */
+        if (config_error_count) {
+            char plural = 's';
+            if (config_error_count == 1)
+                plural = '\0';
+            fprintf(stderr, "Error%c in config file: \"%s\".\n", plural, term->config.file_name);
+            fprintf(stderr, "Exiting...\n");
+            exit(1);
+        }
     }
 
     /* Set a default "reload" config shortcut if one is not provided */

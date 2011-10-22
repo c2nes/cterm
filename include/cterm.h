@@ -19,8 +19,11 @@
 
 #define CONFIG_FILE ".ctermrc"
 
-#define CTERM_UNIT_PX 0
-#define CTERM_UNIT_ROWCOL 1
+/* Terminal size units for measuring lengths */
+enum cterm_length_unit {
+    CTERM_UNIT_PX,
+    CTERM_UNIT_CHAR
+};
 
 typedef struct {
     GtkWindow* window;
@@ -42,7 +45,8 @@ typedef struct {
         float opacity;
 
         char* font;
-        char size_unit;
+        enum cterm_length_unit width_unit;
+        enum cterm_length_unit height_unit;
         unsigned short initial_width;
         unsigned short initial_height;
 

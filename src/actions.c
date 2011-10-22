@@ -45,8 +45,7 @@ void cterm_switch_to_tab_10(CTerm* term) {
 
 static void cterm_set_vte_properties(CTerm* term, VteTerminal* vte) {
     if(term->config.word_chars) {
-
-  vte_terminal_set_word_chars(vte, term->config.word_chars);
+        vte_terminal_set_word_chars(vte, term->config.word_chars);
     }
 
     vte_terminal_set_colors(vte, &(term->config.foreground),
