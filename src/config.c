@@ -284,8 +284,8 @@ static bool cterm_config_process_line(CTerm* term, const char* option, const cha
 
         /* Unknown option */
     } else {
-        /* Ignored for backwards compatability */
-        fprintf(stderr, "Unknown option '%s' at line %d\n", option, line_num);
+        fprintf(stderr, "Unknown config option '%s' at line %d\n", option, line_num);
+        return false;
     }
 
     return true;
