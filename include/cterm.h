@@ -19,12 +19,18 @@
 
 #define CONFIG_FILE ".ctermrc"
 
+/* Terminal size units for measuring lengths */
+enum cterm_length_unit {
+    CTERM_UNIT_PX,
+    CTERM_UNIT_CHAR
+};
+
 typedef struct {
     GtkWindow* window;
     GtkNotebook* notebook;
     GHashTable* terminal_procs;
     int count;
-    
+
     struct {
         char* file_name;
         GtkAccelGroup* keys;
@@ -39,6 +45,10 @@ typedef struct {
         float opacity;
 
         char* font;
+        enum cterm_length_unit width_unit;
+        enum cterm_length_unit height_unit;
+        unsigned short initial_width;
+        unsigned short initial_height;
 
         GdkColor foreground;
         GdkColor background;

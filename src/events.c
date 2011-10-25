@@ -48,7 +48,7 @@ void cterm_onchildexit(VteTerminal* vte, gpointer data) {
     g_hash_table_remove(term->terminal_procs, (gpointer)vte);
 
     gtk_notebook_remove_page(term->notebook, pagenum);
-    
+
     if(term->count == 0) {
         gtk_main_quit();
     } else if(term->count == 1) {

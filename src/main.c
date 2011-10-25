@@ -4,6 +4,9 @@
 int main(int argc, char** argv) {
     CTerm term;
     GtkRcStyle* style;
+    GtkBorder* border;
+    VteTerminal* vte;
+    int char_width, char_height, term_width, term_height;
 
     /* Initialize GTK */
     gtk_init(&argc, &argv);
@@ -18,9 +21,8 @@ int main(int argc, char** argv) {
     cterm_init_config_defaults(&term);
     cterm_reread_config(&term);
 
-    /* Set widget properties */
+    /* Set title */
     gtk_window_set_title(term.window, "cterm");
-    gtk_widget_set_size_request(GTK_WIDGET(term.window), 600, 400);
 
     /* Optionally hide window from taskbar */
     if(getenv("CTERM_HIDE") != NULL) {
@@ -43,7 +45,7 @@ int main(int argc, char** argv) {
 
     /* Connect signals */
     g_signal_connect(term.notebook, "switch-page", G_CALLBACK(cterm_ontabchange), &term);
-    
+
     /* Build main window */
     gtk_container_add(GTK_CONTAINER (term.window), GTK_WIDGET (term.notebook));
 
@@ -52,6 +54,28 @@ int main(int argc, char** argv) {
 
     /* Open initial tab */
     cterm_open_tab(&term);
+
+    /* Get char width & height */
+    if (term.config.width_unit == CTERM_UNIT_CHAR || term.config.height_unit == CTERM_UNIT_CHAR) {
+        vte = cterm_get_vte(&term, (gint) 0);
+        gtk_widget_style_get(GTK_WIDGET(vte), "inner-border", &border, NULL);
+        char_width = vte_terminal_get_char_width(VTE_TERMINAL(vte));
+        char_height = vte_terminal_get_char_height(VTE_TERMINAL(vte));
+    }
+
+    /* Set term width and height.
+       Convert from characters to pixels if needed. */
+    term_width = term.config.initial_width;
+    term_height = term.config.initial_height;
+    if (term.config.width_unit == CTERM_UNIT_CHAR) {
+        term_width = term_width*char_width + border->left + border->right;
+    }
+    if (term.config.height_unit == CTERM_UNIT_CHAR) {
+        term_height = term_height*char_height + border->top + border->bottom;
+    }
+    gtk_widget_set_size_request(GTK_WIDGET(term.window),
+                                term_width,
+                                term_height);
 
     /* Show window and enter main event loop */
     gtk_widget_show_all(GTK_WIDGET (term.window));
