@@ -4,7 +4,8 @@
 static char* cterm_read_line(FILE* f);
 static void cterm_cleanse_config(CTerm* term);
 static bool cterm_config_true_value(const char* value);
-static bool cterm_config_process_line(CTerm* term, const char* option, const char* value);
+static enum cterm_length_unit cterm_config_unit_value(const char* value);
+static bool cterm_config_process_line(CTerm* term, const char* option, const char* value, unsigned short line_num);
 
 void cterm_register_accel(CTerm* term, const char* keyspec, GCallback callback_func) {
     guint key;
@@ -15,7 +16,7 @@ void cterm_register_accel(CTerm* term, const char* keyspec, GCallback callback_f
     if(keyspec[0] == '\0') {
         return;
     }
-    
+
     if(term->config.keys == NULL) {
         term->config.keys = gtk_accel_group_new();
     }
@@ -66,6 +67,12 @@ void cterm_init_config_defaults(CTerm* term) {
     /* Default font */
     term->config.font = NULL;
 
+    /* Default terminal size */
+    term->config.width_unit = CTERM_UNIT_PX;
+    term->config.height_unit = CTERM_UNIT_PX;
+    term->config.initial_width = 600;
+    term->config.initial_height = 400;
+
     /* Default (no) external program */
     term->config.external_program = NULL;
 
@@ -98,7 +105,7 @@ static char* cterm_read_line(FILE* f) {
     char* s = NULL;
     int l = 0;
     int c;
-    
+
     do {
         c = fgetc(f);
         if(c == EOF) {
@@ -147,7 +154,25 @@ static bool cterm_config_true_value(const char* value) {
     return r;
 }
 
-static bool cterm_config_process_line(CTerm* term, const char* option, const char* value) {
+static enum cterm_length_unit cterm_config_unit_value(const char* value) {
+    char* copy = strdup(value);
+
+    /* Skip part number to get to unit part */
+    while (*copy != '\0' && !isalpha(*copy)) {
+        copy++;
+    }
+
+    cterm_string_tolower(copy);
+    if (strcmp(copy, "px") == 0) {
+        return CTERM_UNIT_PX;
+    } else if (strcmp(copy, "char") == 0) {
+        return CTERM_UNIT_CHAR;
+    } else {
+        return -1;
+    }
+}
+
+static bool cterm_config_process_line(CTerm* term, const char* option, const char* value, unsigned short line_num) {
     /* Misc options */
     if(strcmp(option, "word_chars") == 0) {
         term->config.word_chars = strdup(value);
@@ -161,6 +186,20 @@ static bool cterm_config_process_line(CTerm* term, const char* option, const cha
         }
     } else if(strcmp(option, "font") == 0) {
         term->config.font = strdup(value);
+    } else if(strcmp(option, "initial_width") == 0) {
+        term->config.initial_width = atoi(value);
+        term->config.width_unit = cterm_config_unit_value(value);
+        if (term->config.width_unit == -1) {
+            fprintf(stderr, "Unknown unit in value '%s' at line %d.\n", value, line_num);
+            return false;
+        }
+    } else if(strcmp(option, "initial_height") == 0) {
+        term->config.initial_height = atoi(value);
+        term->config.height_unit = cterm_config_unit_value(value);
+        if (term->config.height_unit == -1) {
+            fprintf(stderr, "Unknown unit in value '%s' at line %d.\n", value, line_num);
+            return false;
+        }
     } else if(strcmp(option, "external_program") == 0) {
         term->config.external_program = strdup(value);
     } else if(strcmp(option, "audible_bell") == 0) {
@@ -212,7 +251,7 @@ static bool cterm_config_process_line(CTerm* term, const char* option, const cha
         cterm_parse_color(value, &(term->config.colors[14]));
     } else if(strcmp(option, "color_15") == 0) {
         cterm_parse_color(value, &(term->config.colors[15]));
-        
+
         /* Key bindings options */
     } else if(strcmp(option, "key_tab_1") == 0) {
         cterm_register_accel(term, value, G_CALLBACK(cterm_switch_to_tab_1));
@@ -242,12 +281,13 @@ static bool cterm_config_process_line(CTerm* term, const char* option, const cha
         cterm_register_accel(term, value, G_CALLBACK(cterm_reload));
     } else if(strcmp(option, "key_run") == 0) {
         cterm_register_accel(term, value, G_CALLBACK(cterm_run_external));
-        
+
         /* Unknown option */
     } else {
-        return false;
+        /* Ignored for backwards compatability */
+        fprintf(stderr, "Unknown option '%s' at line %d\n", option, line_num);
     }
-    
+
     return true;
 }
 
@@ -256,6 +296,7 @@ void cterm_reread_config(CTerm* term) {
     char *option, *value;
     char* line;
     int line_num = 0;
+    int config_error_count = 0;
     bool registered_reload_key = false;
 
     /* Prepare for configuration */
@@ -268,13 +309,13 @@ void cterm_reread_config(CTerm* term) {
         while((line = cterm_read_line(conf)) != NULL) {
             line_num++;
             cterm_string_strip(line);
-            
+
             /* Comment */
             if(line[0] == '#' || line[0] == '\0') {
                 free(line);
                 continue;
             }
-            
+
             /* Normal line */
             option = line;
             value = strchr(line, '=');
@@ -283,26 +324,36 @@ void cterm_reread_config(CTerm* term) {
                 free(line);
                 continue;
             }
-            
+
             /* Split string */
             *value = '\0';
             value++;
             cterm_string_strip(option);
             cterm_string_strip(value);
-            
+
             /* Process option/value pair */
-            if(!cterm_config_process_line(term, option, value)) {
-                fprintf(stderr, "Unknown option '%s' at line %d\n", option, line_num);
+            if(!cterm_config_process_line(term, option, value, line_num)) {
+                config_error_count++;
             }
-            
+
             if(strcmp(option, "key_reload") == 0) {
                 registered_reload_key = true;
             }
-            
+
             free(line);
         }
 
         fclose(conf);
+
+        /* Previous Errors? */
+        if (config_error_count) {
+            char plural = 's';
+            if (config_error_count == 1)
+                plural = '\0';
+            fprintf(stderr, "Error%c in config file: \"%s\".\n", plural, term->config.file_name);
+            fprintf(stderr, "Exiting...\n");
+            exit(1);
+        }
     }
 
     /* Set a default "reload" config shortcut if one is not provided */

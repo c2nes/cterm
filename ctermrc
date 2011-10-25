@@ -15,6 +15,11 @@ scrollbar = 0
 # Default font
 font = Bitstream Vera Sans Mono 8
 
+# Default terminal size
+# Suffix these numbers with "px" or "char" to specify units.
+initial_width = 80 char
+initial_height = 24 char
+
 # Audible bell
 audible_bell = true
 

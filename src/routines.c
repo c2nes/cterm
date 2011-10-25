@@ -69,7 +69,7 @@ bool cterm_parse_color(const char* color_spec, GdkColor* color) {
         color_spec++;
     }
 
-    while(color_spec[length] && 
+    while(color_spec[length] &&
           strchr(lookup, toupper(color_spec[length++])) != NULL);
 
     if(length == 3) {
