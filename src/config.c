@@ -161,14 +161,14 @@ static enum cterm_length_unit cterm_config_unit_value(const char* value) {
     char* copy = strdup(value);
 
     /* Skip part number to get to unit part */
-    while (*copy != '\0' && !isalpha(*copy)) {
+    while(*copy != '\0' && !isalpha(*copy)) {
         copy++;
     }
 
     cterm_string_tolower(copy);
-    if (strcmp(copy, "px") == 0) {
+    if(strcmp(copy, "px") == 0) {
         return CTERM_UNIT_PX;
-    } else if (strcmp(copy, "char") == 0) {
+    } else if(strcmp(copy, "char") == 0) {
         return CTERM_UNIT_CHAR;
     } else {
         return -1;
@@ -192,14 +192,14 @@ static bool cterm_config_process_line(CTerm* term, const char* option, const cha
     } else if(strcmp(option, "initial_width") == 0) {
         term->config.initial_width = atoi(value);
         term->config.width_unit = cterm_config_unit_value(value);
-        if (term->config.width_unit == -1) {
+        if(term->config.width_unit == -1) {
             fprintf(stderr, "Unknown unit in value '%s' at line %d.\n", value, line_num);
             return false;
         }
     } else if(strcmp(option, "initial_height") == 0) {
         term->config.initial_height = atoi(value);
         term->config.height_unit = cterm_config_unit_value(value);
-        if (term->config.height_unit == -1) {
+        if(term->config.height_unit == -1) {
             fprintf(stderr, "Unknown unit in value '%s' at line %d.\n", value, line_num);
             return false;
         }
@@ -360,10 +360,12 @@ void cterm_reread_config(CTerm* term) {
         fclose(conf);
 
         /* Previous Errors? */
-        if (config_error_count) {
+        if(config_error_count) {
             char plural = 's';
-            if (config_error_count == 1)
+            if(config_error_count == 1) {
                 plural = '\0';
+            }
+
             fprintf(stderr, "Error%c in config file: \"%s\".\n", plural, term->config.file_name);
             fprintf(stderr, "Exiting...\n");
             exit(1);
