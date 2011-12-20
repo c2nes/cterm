@@ -26,6 +26,17 @@ audible_bell = true
 # Visible bell
 visible_bell = false
 
+# Backspace Behavior
+# This determines what is sent to the terminal when backspace is pressed.
+# Valid values are:
+#   * auto
+#   * ascii_backspace - Sends ascii Backspace (0x08) which is the same as
+#                       control-h.
+#   * ascii_delete - Sends ascii Del (0x7F).  This behaves the same as
+#                    ascii_backspace for most programs.  Use this if you need
+#                    to distinguish backspace and control-h.
+backspace_behavior = auto
+
 # Foreground/background color
 foreground = #fff
 background = #000
@@ -56,7 +67,7 @@ color_13 = #f5f
 color_14 = #5ff
 color_15 = #fff
 
-# Default key bindings
+# Key bindings
 key_open_tab = <Alt><Shift>t
 key_close_tab = <Alt><Shift>q
 key_reload = <Alt><Ctrl><Shift>r

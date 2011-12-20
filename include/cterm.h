@@ -57,6 +57,8 @@ typedef struct {
         bool audible_bell;
         bool visible_bell;
 
+        VteTerminalEraseBinding backspace_behavior;
+
         char* external_program;
     } config;
 } CTerm;

@@ -56,6 +56,8 @@ static void cterm_set_vte_properties(CTerm* term, VteTerminal* vte) {
     vte_terminal_set_audible_bell(vte, term->config.audible_bell);
     vte_terminal_set_visible_bell(vte, term->config.visible_bell);
 
+    vte_terminal_set_backspace_binding(vte, term->config.backspace_behavior);
+
     if(term->config.transparent) {
         vte_terminal_set_background_tint_color(vte, &(term->config.background));
         vte_terminal_set_background_saturation(vte, 1.0 - term->config.opacity);

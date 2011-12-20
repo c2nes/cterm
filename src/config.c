@@ -80,6 +80,9 @@ void cterm_init_config_defaults(CTerm* term) {
     term->config.audible_bell = false;
     term->config.visible_bell = false;
 
+    /* Automatic backspace key behavior */
+    term->config.backspace_behavior = VTE_ERASE_AUTO;
+
     /* Initialize colors */
     cterm_parse_color("#000", &(term->config.background));
     cterm_parse_color("#FFF", &(term->config.foreground));
@@ -206,6 +209,17 @@ static bool cterm_config_process_line(CTerm* term, const char* option, const cha
         term->config.audible_bell = cterm_config_true_value(value);
     } else if(strcmp(option, "visible_bell") == 0) {
         term->config.visible_bell = cterm_config_true_value(value);
+
+    } else if(strcmp(option, "backspace_behavior") == 0) {
+        if(strcmp(value, "auto") == 0) {
+            term->config.backspace_behavior = VTE_ERASE_AUTO;
+        } else if(strcmp(value, "ascii_backspace") == 0) {
+            term->config.backspace_behavior = VTE_ERASE_ASCII_BACKSPACE;
+        } else if(strcmp(value, "ascii_delete") == 0) {
+            term->config.backspace_behavior = VTE_ERASE_ASCII_DELETE;
+        } else {
+            fprintf(stderr, "Invalid value '%s' for backspace behavior at line %d.\n", value, line_num);
+        }
 
         /* Transparency options */
     } else if(strcmp(option, "transparent") == 0) {
