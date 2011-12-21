@@ -145,7 +145,30 @@ void cterm_close_tab(CTerm* term) {
     gint p = gtk_notebook_get_current_page(term->notebook);
     VteTerminal* vte = cterm_get_vte(term, p);
     pid_t* pid = (pid_t*) g_hash_table_lookup(term->terminal_procs, (gpointer)vte);
-    kill(*pid, SIGKILL);
+    GtkWidget* dialog;
+
+    if(term->config.confirm_close_tab && cterm_vte_has_foreground_process(term, vte)) {
+
+        /* Process is running in tab!  Prompt user. */
+        dialog = gtk_message_dialog_new(GTK_WINDOW(term->window),
+                                        GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                        GTK_MESSAGE_WARNING,
+                                        GTK_BUTTONS_CANCEL,
+                                        "Close Tab?");
+        gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog), "Tab has a running process.  Still close?");
+        gtk_window_set_title(GTK_WINDOW(dialog), "");
+        gtk_dialog_add_button(GTK_DIALOG(dialog), "C_lose Tab", GTK_RESPONSE_ACCEPT);
+        gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
+        gtk_dialog_set_alternative_button_order(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT, GTK_RESPONSE_CANCEL, -1);
+        g_signal_connect(dialog, "response", G_CALLBACK(cterm_close_dialog_onresponse), pid);
+        gtk_window_present(GTK_WINDOW(dialog));
+
+    } else {
+
+        /* Nothing running in tab, just kill */
+        kill(*pid, SIGKILL);
+
+    }
 }
 
 void cterm_reload(CTerm* term) {

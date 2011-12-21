@@ -37,6 +37,11 @@ visible_bell = false
 #                    to distinguish backspace and control-h.
 backspace_behavior = auto
 
+# Confirm Close
+# If a process is running in a tab or window, prompt user before closing.
+confirm_close_window = true
+confirm_close_tab = true
+
 # Foreground/background color
 foreground = #fff
 background = #000
@@ -45,8 +50,8 @@ background = #000
 transparent = false
 opacity = 80
 
-# Run this program and pass the selected text to it when key_run is actived or
-# the left mouse button is clicked
+# Run this program and pass the selected text to it when key_run is activated
+# or the left mouse button is clicked
 external_program = cterm_run
 
 # Palette for output

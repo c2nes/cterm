@@ -145,3 +145,51 @@ GtkWidget* cterm_new_label(const char* str) {
 
     return align;
 }
+
+bool cterm_term_has_foreground_process(CTerm* term) {
+    VteTerminal* vte;
+    GtkWidget* box;
+    GList* children;
+    GList* node;
+
+    for(int i = 0; i < term->count; i++) {
+        box = gtk_notebook_get_nth_page(term->notebook, i);
+        children = gtk_container_get_children(GTK_CONTAINER (box));
+        node = children;
+        vte = NULL;
+
+        while(node != NULL) {
+            if(VTE_IS_TERMINAL(node->data)) {
+
+                vte = VTE_TERMINAL(node->data);
+                if (cterm_vte_has_foreground_process(term, vte)) {
+                    return true;
+                } else {
+                    break;
+                }
+
+            }
+        }
+    }
+    return false;
+}
+
+bool cterm_vte_has_foreground_process(CTerm* term, VteTerminal* vte) {
+    int pty_fd;
+    int pid_grp;
+    int fg_pid;
+
+    pty_fd = vte_terminal_get_pty(vte);
+    if(pty_fd == -1) {
+        return false;
+    }
+    pid_grp = tcgetpgrp(pty_fd);
+    if(pid_grp == -1) {
+        return false;
+    }
+    fg_pid = *((int*)g_hash_table_lookup(term->terminal_procs, (gpointer)vte));
+    if(pid_grp == fg_pid) {
+        return false;
+    }
+    return true;
+}

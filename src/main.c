@@ -49,7 +49,9 @@ int main(int argc, char** argv) {
     /* Build main window */
     gtk_container_add(GTK_CONTAINER (term.window), GTK_WIDGET (term.notebook));
 
-    /* Exit on window close */
+    /* Confirm exit on window close.
+       Event propagates to gtk_main_quit if cterm_onwindowclose returns FALSE. */
+    g_signal_connect(term.window, "delete-event", G_CALLBACK(cterm_onwindowclose), &term);
     g_signal_connect(term.window, "delete-event", gtk_main_quit, NULL);
 
     /* Open initial tab */

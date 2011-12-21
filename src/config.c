@@ -83,6 +83,10 @@ void cterm_init_config_defaults(CTerm* term) {
     /* Automatic backspace key behavior */
     term->config.backspace_behavior = VTE_ERASE_AUTO;
 
+    /* Confirm close */
+    term->config.confirm_close_window = true;
+    term->config.confirm_close_tab = true;
+
     /* Initialize colors */
     cterm_parse_color("#000", &(term->config.background));
     cterm_parse_color("#FFF", &(term->config.foreground));
@@ -220,6 +224,12 @@ static bool cterm_config_process_line(CTerm* term, const char* option, const cha
         } else {
             fprintf(stderr, "Invalid value '%s' for backspace behavior at line %d.\n", value, line_num);
         }
+
+        /* Confirm close */
+    } else if(strcmp(option, "confirm_close_window") == 0) {
+        term->config.confirm_close_window = cterm_config_true_value(value);
+    } else if(strcmp(option, "confirm_close_tab") == 0) {
+        term->config.confirm_close_tab = cterm_config_true_value(value);
 
         /* Transparency options */
     } else if(strcmp(option, "transparent") == 0) {

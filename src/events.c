@@ -55,3 +55,49 @@ void cterm_onchildexit(VteTerminal* vte, gpointer data) {
         gtk_notebook_set_show_tabs(term->notebook, FALSE);
     }
 }
+
+gboolean cterm_onwindowclose(GtkWidget* window, GdkEvent* event, gpointer data) {
+    CTerm* term = (CTerm*) data;
+    GtkWidget* dialog;
+
+    if(term->config.confirm_close_window && cterm_term_has_foreground_process(term)) {
+
+        /* Process is running in terminal!  Prompt user. */
+        dialog = gtk_message_dialog_new(GTK_WINDOW(window),
+                                        GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                        GTK_MESSAGE_WARNING,
+                                        GTK_BUTTONS_CANCEL,
+                                        "Close Terminal?");
+        if(term->count > 1) {
+            gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog), "Some tabs have a running process.  Still close?");
+        } else {
+            gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog), "Terminal has a running process.  Still close?");
+        }
+        gtk_window_set_title(GTK_WINDOW(dialog), "");
+        gtk_dialog_add_button(GTK_DIALOG(dialog), term->count > 1 ? "C_lose Window" : "C_lose Terminal", GTK_RESPONSE_ACCEPT);
+        gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
+        gtk_dialog_set_alternative_button_order(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT, GTK_RESPONSE_CANCEL, -1);
+        g_signal_connect(dialog, "response", G_CALLBACK(cterm_close_dialog_onresponse), NULL);
+        gtk_window_present(GTK_WINDOW(dialog));
+        return TRUE;
+
+    } else {
+
+        /* Propagate event to gtk_main_quit */
+        return FALSE;
+
+    }
+
+}
+
+void cterm_close_dialog_onresponse(GtkWidget* dialog, int response, gpointer data) {
+    pid_t* pid = (pid_t*) data;  /* Process to kill if not NULL */
+    gtk_widget_destroy(dialog);
+    if(response == GTK_RESPONSE_ACCEPT) {
+        if (pid != NULL) {
+            kill(*pid, SIGKILL);
+        } else {
+            gtk_main_quit();
+        }
+    }
+}

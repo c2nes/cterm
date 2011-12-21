@@ -59,6 +59,9 @@ typedef struct {
 
         VteTerminalEraseBinding backspace_behavior;
 
+        bool confirm_close_window;
+        bool confirm_close_tab;
+
         char* external_program;
     } config;
 } CTerm;
@@ -96,6 +99,8 @@ void cterm_onbeep(VteTerminal * vte, gpointer data);
 void cterm_onchildexit(VteTerminal* vte, gpointer data);
 void cterm_ontabchange(GtkNotebook* notebook, GtkNotebookPage* page, guint page_num, gpointer data);
 void cterm_ontitlechange(VteTerminal* vte, gpointer data);
+gboolean cterm_onwindowclose(GtkWidget* window, GdkEvent* event, gpointer data);
+void cterm_close_dialog_onresponse(GtkWidget* dialog, int response, gpointer data);
 
 /* routines.c */
 VteTerminal* cterm_get_vte(CTerm* term, gint page_num);
@@ -103,5 +108,7 @@ void cterm_string_tolower(char* buffer);
 void cterm_string_strip(char* buffer);
 bool cterm_parse_color(const char* color_spec, GdkColor* color);
 GtkWidget* cterm_new_label(const char* str);
+bool cterm_term_has_foreground_process(CTerm* term);
+bool cterm_vte_has_foreground_process(CTerm* term, VteTerminal* vte);
 
 #endif // #ifndef _CTERM_INCLUDE_H
