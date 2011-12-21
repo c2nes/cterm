@@ -41,13 +41,13 @@ int main(int argc, char** argv) {
     style = gtk_rc_style_new();
     style->xthickness = 0;
     style->ythickness = 0;
-    gtk_widget_modify_style(GTK_WIDGET (term.notebook), style);
+    gtk_widget_modify_style(GTK_WIDGET(term.notebook), style);
 
     /* Connect signals */
     g_signal_connect(term.notebook, "switch-page", G_CALLBACK(cterm_ontabchange), &term);
 
     /* Build main window */
-    gtk_container_add(GTK_CONTAINER (term.window), GTK_WIDGET (term.notebook));
+    gtk_container_add(GTK_CONTAINER(term.window), GTK_WIDGET(term.notebook));
 
     /* Confirm exit on window close.
        Event propagates to gtk_main_quit if cterm_onwindowclose returns FALSE. */
@@ -80,7 +80,7 @@ int main(int argc, char** argv) {
                                 term_height);
 
     /* Show window and enter main event loop */
-    gtk_widget_show_all(GTK_WIDGET (term.window));
+    gtk_widget_show_all(GTK_WIDGET(term.window));
 
     gtk_main();
     return 0;

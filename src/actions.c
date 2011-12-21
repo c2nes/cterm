@@ -111,8 +111,8 @@ void cterm_open_tab(CTerm* term) {
     hints.min_height = new_vte->char_height;
     hints.width_inc = new_vte->char_width;
     hints.height_inc = new_vte->char_height;
-    gtk_window_set_geometry_hints (GTK_WINDOW (term->window), GTK_WIDGET (new_vte), &hints,
-                                   GDK_HINT_RESIZE_INC | GDK_HINT_MIN_SIZE | GDK_HINT_BASE_SIZE);
+    gtk_window_set_geometry_hints(GTK_WINDOW(term->window), GTK_WIDGET(new_vte), &hints,
+                                  GDK_HINT_RESIZE_INC | GDK_HINT_MIN_SIZE | GDK_HINT_BASE_SIZE);
 
     /* Construct tab title */
     title = cterm_new_label("cterm");
@@ -121,20 +121,20 @@ void cterm_open_tab(CTerm* term) {
     scrollbar = gtk_vscrollbar_new(new_vte->adjustment);
 
     box = gtk_hbox_new(false, 0);
-    gtk_box_pack_start (GTK_BOX (box), GTK_WIDGET (new_vte), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(new_vte), TRUE, TRUE, 0);
     if(term->config.scrollbar == GTK_POLICY_ALWAYS) {
-        gtk_box_pack_start (GTK_BOX (box), scrollbar, FALSE, FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(box), scrollbar, FALSE, FALSE, 0);
     }
     gtk_widget_show_all(box);
 
     /* Add to notebook */
-    gtk_notebook_append_page(term->notebook, GTK_WIDGET (box), title);
-    gtk_notebook_set_tab_reorderable(term->notebook, GTK_WIDGET (box), TRUE);
-    gtk_notebook_set_tab_label_packing(term->notebook, GTK_WIDGET (box), TRUE, TRUE, GTK_PACK_START);
+    gtk_notebook_append_page(term->notebook, GTK_WIDGET(box), title);
+    gtk_notebook_set_tab_reorderable(term->notebook, GTK_WIDGET(box), TRUE);
+    gtk_notebook_set_tab_label_packing(term->notebook, GTK_WIDGET(box), TRUE, TRUE, GTK_PACK_START);
     gtk_notebook_set_current_page(term->notebook, term->count - 1);
 
     /* Place focus in VTE */
-    gtk_widget_grab_focus(GTK_WIDGET (new_vte));
+    gtk_widget_grab_focus(GTK_WIDGET(new_vte));
 
     if(term->count == 2) {
         gtk_notebook_set_show_tabs(term->notebook, TRUE);
@@ -187,18 +187,18 @@ void cterm_reload(CTerm* term) {
     /* Reconfigure all terminals */
     for(int i = 0; i < term->count; i++) {
         box = gtk_notebook_get_nth_page(term->notebook, i);
-        children = gtk_container_get_children(GTK_CONTAINER (box));
+        children = gtk_container_get_children(GTK_CONTAINER(box));
         node = children;
         has_scrollbar = false;
         vte = NULL;
 
         while(node != NULL) {
-            if(VTE_IS_TERMINAL (node->data)) {
-                vte = VTE_TERMINAL (node->data);
+            if(VTE_IS_TERMINAL(node->data)) {
+                vte = VTE_TERMINAL(node->data);
                 cterm_set_vte_properties(term, vte);
-            } else if(GTK_IS_VSCROLLBAR (node->data)) {
+            } else if(GTK_IS_VSCROLLBAR(node->data)) {
                 if(term->config.scrollbar == GTK_POLICY_NEVER) {
-                    gtk_container_remove(GTK_CONTAINER (box), GTK_WIDGET (node->data));
+                    gtk_container_remove(GTK_CONTAINER(box), GTK_WIDGET(node->data));
                 }
                 has_scrollbar = true;
             }
@@ -207,7 +207,7 @@ void cterm_reload(CTerm* term) {
 
         if(has_scrollbar == false && term->config.scrollbar == GTK_POLICY_ALWAYS) {
             scrollbar = gtk_vscrollbar_new(vte->adjustment);
-            gtk_box_pack_start (GTK_BOX (box), scrollbar, FALSE, FALSE, 0);
+            gtk_box_pack_start(GTK_BOX(box), scrollbar, FALSE, FALSE, 0);
             gtk_widget_show_all(box);
         }
 

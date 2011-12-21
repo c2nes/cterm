@@ -5,13 +5,13 @@
 
 VteTerminal* cterm_get_vte(CTerm* term, gint page_num) {
     GtkWidget* box = gtk_notebook_get_nth_page(term->notebook, page_num);
-    GList* children = gtk_container_get_children(GTK_CONTAINER (box));
+    GList* children = gtk_container_get_children(GTK_CONTAINER(box));
     GList* node = children;
     VteTerminal* vte;
 
     while(node != NULL) {
-        vte = VTE_TERMINAL (node->data);
-        if(VTE_IS_TERMINAL (vte)) {
+        vte = VTE_TERMINAL(node->data);
+        if(VTE_IS_TERMINAL(vte)) {
             break;
         }
         node = node->next;
@@ -162,7 +162,7 @@ bool cterm_term_has_foreground_process(CTerm* term) {
             if(VTE_IS_TERMINAL(node->data)) {
 
                 vte = VTE_TERMINAL(node->data);
-                if (cterm_vte_has_foreground_process(term, vte)) {
+                if(cterm_vte_has_foreground_process(term, vte)) {
                     return true;
                 } else {
                     break;

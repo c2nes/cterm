@@ -164,7 +164,7 @@ static bool cterm_config_true_value(const char* value) {
 static enum cterm_length_unit cterm_config_unit_value(const char* value) {
     char* copy = strdup(value);
 
-    /* Skip part number to get to unit part */
+    /* Skip number to get to unit */
     while(*copy != '\0' && !isalpha(*copy)) {
         copy++;
     }
