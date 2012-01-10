@@ -148,27 +148,11 @@ GtkWidget* cterm_new_label(const char* str) {
 
 bool cterm_term_has_foreground_process(CTerm* term) {
     VteTerminal* vte;
-    GtkWidget* box;
-    GList* children;
-    GList* node;
 
     for(int i = 0; i < term->count; i++) {
-        box = gtk_notebook_get_nth_page(term->notebook, i);
-        children = gtk_container_get_children(GTK_CONTAINER (box));
-        node = children;
-        vte = NULL;
-
-        while(node != NULL) {
-            if(VTE_IS_TERMINAL(node->data)) {
-
-                vte = VTE_TERMINAL(node->data);
-                if(cterm_vte_has_foreground_process(term, vte)) {
-                    return true;
-                } else {
-                    break;
-                }
-
-            }
+        vte = cterm_get_vte(term, i);
+        if(cterm_vte_has_foreground_process(term, vte)) {
+            return true;
         }
     }
     return false;
@@ -202,9 +186,6 @@ gint cterm_get_font_size(CTerm* term) {
 
 void cterm_set_font_size(CTerm* term, gint size) {
     VteTerminal* vte = cterm_get_vte(term, 0);
-    GtkWidget* box;
-    GList* children;
-    GList* node;
     PangoFontDescription* font;
     gint new_width, new_height;
     /* TODO: If anybody knows why column and row counts need to be +1 here,
@@ -218,24 +199,10 @@ void cterm_set_font_size(CTerm* term, gint size) {
 
     /* Resize all terminals */
     for(int i = 0; i < term->count; i++) {
-        box = gtk_notebook_get_nth_page(term->notebook, i);
-        children = gtk_container_get_children(GTK_CONTAINER(box));
-        node = children;
-        vte = NULL;
-        font = NULL;
-
-        while(node != NULL) {
-            if(VTE_IS_TERMINAL(node->data)) {
-                vte = VTE_TERMINAL(node->data);
-
-                font = pango_font_description_copy_static(vte_terminal_get_font(vte));
-                pango_font_description_set_size(font, (gint)size);
-                vte_terminal_set_font(vte, font);
-
-                break;
-            }
-            node = node->next;
-        }
+        vte = cterm_get_vte(term, i);
+        font = pango_font_description_copy_static(vte_terminal_get_font(vte));
+        pango_font_description_set_size(font, (gint)size);
+        vte_terminal_set_font(vte, font);
     }
 
     /* Resize Window
@@ -252,7 +219,9 @@ void cterm_set_font_size(CTerm* term, gint size) {
     } else {
         gtk_window_get_size(term->window, NULL, &new_height);
     }
-    cterm_set_term_size(term, new_width, new_height, term->config.width_unit, term->config.height_unit);
+    cterm_set_term_size(term,
+                        new_width, new_height,
+                        term->config.width_unit, term->config.height_unit);
 
 }
 
