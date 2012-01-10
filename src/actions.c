@@ -244,3 +244,11 @@ void cterm_run_external(CTerm* term) {
         }
     }
 }
+
+void cterm_increase_font_size(CTerm* term) {
+    cterm_set_font_size_relative(term, (gint) 2*PANGO_SCALE);
+}
+
+void cterm_decrease_font_size(CTerm* term) {
+    cterm_set_font_size_relative(term, (gint) -2*PANGO_SCALE);
+}

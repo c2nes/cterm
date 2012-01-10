@@ -87,3 +87,5 @@ key_tab_7 = <Ctrl>7
 key_tab_8 = <Ctrl>8
 key_tab_9 = <Ctrl>9
 key_tab_10 = <Ctrl>0
+key_font_size_increase = <Ctrl>minus
+key_font_size_decrease = <Ctrl>plus

@@ -86,6 +86,8 @@ void cterm_open_tab(CTerm* term);
 void cterm_close_tab(CTerm* term);
 void cterm_reload(CTerm* term);
 void cterm_run_external(CTerm* term);
+void cterm_increase_font_size(CTerm* term);
+void cterm_decrease_font_size(CTerm* term);
 
 /* config.c */
 void cterm_register_accel(CTerm* term, const char* keyspec, GCallback callback_func);
@@ -110,5 +112,13 @@ bool cterm_parse_color(const char* color_spec, GdkColor* color);
 GtkWidget* cterm_new_label(const char* str);
 bool cterm_term_has_foreground_process(CTerm* term);
 bool cterm_vte_has_foreground_process(CTerm* term, VteTerminal* vte);
+gint cterm_get_font_size(CTerm* term);
+void cterm_set_font_size(CTerm* term, gint size);
+void cterm_set_font_size_relative(CTerm* term, gint delta);
+void cterm_set_term_size(CTerm* term,
+                         unsigned short width,
+                         unsigned short height,
+                         enum cterm_length_unit width_unit,
+                         enum cterm_length_unit height_unit);
 
 #endif // #ifndef _CTERM_INCLUDE_H

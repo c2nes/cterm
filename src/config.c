@@ -305,6 +305,10 @@ static bool cterm_config_process_line(CTerm* term, const char* option, const cha
         cterm_register_accel(term, value, G_CALLBACK(cterm_reload));
     } else if(strcmp(option, "key_run") == 0) {
         cterm_register_accel(term, value, G_CALLBACK(cterm_run_external));
+    } else if(strcmp(option, "key_font_size_increase") == 0) {
+        cterm_register_accel(term, value, G_CALLBACK(cterm_increase_font_size));
+    } else if(strcmp(option, "key_font_size_decrease") == 0) {
+        cterm_register_accel(term, value, G_CALLBACK(cterm_decrease_font_size));
 
         /* Unknown option */
     } else {
