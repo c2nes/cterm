@@ -21,6 +21,11 @@ VteTerminal* cterm_get_vte(CTerm* term, gint page_num) {
     return vte;
 }
 
+VteTerminal* cterm_get_current_vte(CTerm* term) {
+    gint p = gtk_notebook_get_current_page(term->notebook);
+    return cterm_get_vte(term, p);
+}
+
 void cterm_string_tolower(char* buffer) {
     for(int i = 0; buffer[i]; i++) {
         if(isupper(buffer[i])) {

@@ -30,6 +30,10 @@ const KeyOption key_options[] = {
     {"run", cterm_run_external},
     {"font_size_increase", cterm_increase_font_size},
     {"font_size_decrease", cterm_decrease_font_size},
+    {"select_all", cterm_select_all},
+    {"select_none", cterm_select_none},
+    {"copy", cterm_copy_text},
+    {"paste", cterm_paste_text},
     {NULL, NULL}
 };
 

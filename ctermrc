@@ -73,6 +73,10 @@ color_14 = #5ff
 color_15 = #fff
 
 # Key bindings
+# Specified as a list of modifiers in angled brackets (like "<Shift>") followed
+# by a key.  Keys can be a single letter or number, but symbols such as - and +
+# should be spelled out "minus" and "plus".  Empty key bindings are ignored.
+# Multiple bindings may be specified for the same action.
 key_open_tab = <Alt><Shift>t
 key_close_tab = <Alt><Shift>q
 key_reload = <Alt><Ctrl><Shift>r
@@ -89,3 +93,7 @@ key_tab_9 = <Ctrl>9
 key_tab_10 = <Ctrl>0
 key_font_size_increase = <Ctrl>plus
 key_font_size_decrease = <Ctrl>minus
+key_copy = <Ctrl><Shift>c
+key_paste = <Ctrl>v
+key_select_all =
+key_select_none =

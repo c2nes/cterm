@@ -83,6 +83,10 @@ void cterm_reload(CTerm* term);
 void cterm_run_external(CTerm* term);
 void cterm_increase_font_size(CTerm* term);
 void cterm_decrease_font_size(CTerm* term);
+void cterm_select_all(CTerm* term);
+void cterm_select_none(CTerm* term);
+void cterm_copy_text(CTerm* term);
+void cterm_paste_text(CTerm* term);
 
 /* config.c */
 bool cterm_register_accel(CTerm* term, const char* keyspec, GCallback callback_func);
@@ -101,6 +105,7 @@ void cterm_close_dialog_onresponse(GtkWidget* dialog, int response, gpointer dat
 
 /* routines.c */
 VteTerminal* cterm_get_vte(CTerm* term, gint page_num);
+VteTerminal* cterm_get_current_vte(CTerm* term);
 void cterm_string_tolower(char* buffer);
 void cterm_string_strip(char* buffer);
 bool cterm_parse_color(const char* color_spec, GdkColor* color);

@@ -142,8 +142,7 @@ void cterm_open_tab(CTerm* term) {
 }
 
 void cterm_close_tab(CTerm* term) {
-    gint p = gtk_notebook_get_current_page(term->notebook);
-    VteTerminal* vte = cterm_get_vte(term, p);
+    VteTerminal* vte = cterm_get_current_vte(term);
     pid_t* pid = (pid_t*) g_hash_table_lookup(term->terminal_procs, (gpointer)vte);
     GtkWidget* dialog;
 
@@ -216,8 +215,7 @@ void cterm_reload(CTerm* term) {
 }
 
 void cterm_run_external(CTerm* term) {
-    gint p = gtk_notebook_get_current_page(term->notebook);
-    VteTerminal* vte = cterm_get_vte(term, p);
+    VteTerminal* vte = cterm_get_current_vte(term);
     char* data;
     int fp[2];
 
@@ -251,4 +249,24 @@ void cterm_increase_font_size(CTerm* term) {
 
 void cterm_decrease_font_size(CTerm* term) {
     cterm_set_font_size_relative(term, (gint) -2*PANGO_SCALE);
+}
+
+void cterm_select_all(CTerm* term) {
+    VteTerminal* vte = cterm_get_current_vte(term);
+    vte_terminal_select_all(vte);
+}
+
+void cterm_select_none(CTerm* term) {
+    VteTerminal* vte = cterm_get_current_vte(term);
+    vte_terminal_select_none(vte);
+}
+
+void cterm_copy_text(CTerm* term) {
+    VteTerminal* vte = cterm_get_current_vte(term);
+    vte_terminal_copy_clipboard(vte);
+}
+
+void cterm_paste_text(CTerm* term) {
+    VteTerminal* vte = cterm_get_current_vte(term);
+    vte_terminal_paste_clipboard(vte);
 }
