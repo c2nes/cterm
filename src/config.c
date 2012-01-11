@@ -7,14 +7,40 @@ static bool cterm_config_true_value(const char* value);
 static enum cterm_length_unit cterm_config_unit_value(const char* value);
 static bool cterm_config_process_line(CTerm* term, const char* option, const char* value, unsigned short line_num);
 
-void cterm_register_accel(CTerm* term, const char* keyspec, GCallback callback_func) {
+typedef struct {
+    char* name;  /* Option will be "key_<name>" */
+    void (*callback)(CTerm*); /* Called when accel is pressed */
+} KeyOption;
+
+/* Stores possible options for key accelerations. */
+const KeyOption key_options[] = {
+    {"tab_1", cterm_switch_to_tab_1},
+    {"tab_2", cterm_switch_to_tab_2},
+    {"tab_3", cterm_switch_to_tab_3},
+    {"tab_4", cterm_switch_to_tab_4},
+    {"tab_5", cterm_switch_to_tab_5},
+    {"tab_6", cterm_switch_to_tab_6},
+    {"tab_7", cterm_switch_to_tab_7},
+    {"tab_8", cterm_switch_to_tab_8},
+    {"tab_9", cterm_switch_to_tab_9},
+    {"tab_10", cterm_switch_to_tab_10},
+    {"open_tab", cterm_open_tab},
+    {"close_tab", cterm_close_tab},
+    {"reload", cterm_reload},
+    {"run", cterm_run_external},
+    {"font_size_increase", cterm_increase_font_size},
+    {"font_size_decrease", cterm_decrease_font_size},
+    {NULL, NULL}
+};
+
+bool cterm_register_accel(CTerm* term, const char* keyspec, GCallback callback_func) {
     guint key;
     GdkModifierType mod;
     GClosure* closure;
 
     /* Empty key spec */
     if(keyspec[0] == '\0') {
-        return;
+        return true;
     }
 
     if(term->config.keys == NULL) {
@@ -22,8 +48,12 @@ void cterm_register_accel(CTerm* term, const char* keyspec, GCallback callback_f
     }
 
     gtk_accelerator_parse(keyspec, &key, &mod);
+    if (key == 0 || mod == 0) {
+        return false;
+    }
     closure = g_cclosure_new_swap(callback_func, (gpointer)term, NULL);
     gtk_accel_group_connect(term->config.keys, key, mod, GTK_ACCEL_LOCKED, closure);
+    return true;
 }
 
 void cterm_init_config_defaults(CTerm* term) {
@@ -180,6 +210,9 @@ static enum cterm_length_unit cterm_config_unit_value(const char* value) {
 }
 
 static bool cterm_config_process_line(CTerm* term, const char* option, const char* value, unsigned short line_num) {
+    int i;
+    bool found_option = true;
+
     /* Misc options */
     if(strcmp(option, "word_chars") == 0) {
         term->config.word_chars = strdup(value);
@@ -276,42 +309,30 @@ static bool cterm_config_process_line(CTerm* term, const char* option, const cha
     } else if(strcmp(option, "color_15") == 0) {
         cterm_parse_color(value, &(term->config.colors[15]));
 
-        /* Key bindings options */
-    } else if(strcmp(option, "key_tab_1") == 0) {
-        cterm_register_accel(term, value, G_CALLBACK(cterm_switch_to_tab_1));
-    } else if(strcmp(option, "key_tab_2") == 0) {
-        cterm_register_accel(term, value, G_CALLBACK(cterm_switch_to_tab_2));
-    } else if(strcmp(option, "key_tab_3") == 0) {
-        cterm_register_accel(term, value, G_CALLBACK(cterm_switch_to_tab_3));
-    } else if(strcmp(option, "key_tab_4") == 0) {
-        cterm_register_accel(term, value, G_CALLBACK(cterm_switch_to_tab_4));
-    } else if(strcmp(option, "key_tab_5") == 0) {
-        cterm_register_accel(term, value, G_CALLBACK(cterm_switch_to_tab_5));
-    } else if(strcmp(option, "key_tab_6") == 0) {
-        cterm_register_accel(term, value, G_CALLBACK(cterm_switch_to_tab_6));
-    } else if(strcmp(option, "key_tab_7") == 0) {
-        cterm_register_accel(term, value, G_CALLBACK(cterm_switch_to_tab_7));
-    } else if(strcmp(option, "key_tab_8") == 0) {
-        cterm_register_accel(term, value, G_CALLBACK(cterm_switch_to_tab_8));
-    } else if(strcmp(option, "key_tab_9") == 0) {
-        cterm_register_accel(term, value, G_CALLBACK(cterm_switch_to_tab_9));
-    } else if(strcmp(option, "key_tab_10") == 0) {
-        cterm_register_accel(term, value, G_CALLBACK(cterm_switch_to_tab_10));
-    } else if(strcmp(option, "key_open_tab") == 0) {
-        cterm_register_accel(term, value, G_CALLBACK(cterm_open_tab));
-    } else if(strcmp(option, "key_close_tab") == 0) {
-        cterm_register_accel(term, value, G_CALLBACK(cterm_close_tab));
-    } else if(strcmp(option, "key_reload") == 0) {
-        cterm_register_accel(term, value, G_CALLBACK(cterm_reload));
-    } else if(strcmp(option, "key_run") == 0) {
-        cterm_register_accel(term, value, G_CALLBACK(cterm_run_external));
-    } else if(strcmp(option, "key_font_size_increase") == 0) {
-        cterm_register_accel(term, value, G_CALLBACK(cterm_increase_font_size));
-    } else if(strcmp(option, "key_font_size_decrease") == 0) {
-        cterm_register_accel(term, value, G_CALLBACK(cterm_decrease_font_size));
+        /* Accels that start with "key_" */
+    } else if(strncmp(option, "key_", 4) == 0) {
+        found_option = false;
+        for (i=0; ; i++) {
+            KeyOption key_option = key_options[i];
+            if (key_option.name == NULL || key_option.callback == NULL) {
+                break;
+            }
+            if (strcmp(option+4, key_option.name) == 0) {
+                if (!cterm_register_accel(term, value, G_CALLBACK(key_option.callback))) {
+                    fprintf(stderr, "Key acceleration '%s' could not be parsed at line %d\n", value, line_num);
+                    return false;
+                }
+                found_option = true;
+                break;
+            }
+        }
 
-        /* Unknown option */
     } else {
+        found_option = false;
+    }
+
+    /* Unknown option */
+    if (!found_option) {
         fprintf(stderr, "Unknown config option '%s' at line %d\n", option, line_num);
         return false;
     }

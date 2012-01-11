@@ -66,11 +66,6 @@ typedef struct {
     } config;
 } CTerm;
 
-typedef struct {
-    const char* keyspec;
-    void (*callback)(CTerm*);
-} KeyBinding;
-
 /* actions.c */
 void cterm_switch_to_tab_1(CTerm* term);
 void cterm_switch_to_tab_2(CTerm* term);
@@ -90,7 +85,7 @@ void cterm_increase_font_size(CTerm* term);
 void cterm_decrease_font_size(CTerm* term);
 
 /* config.c */
-void cterm_register_accel(CTerm* term, const char* keyspec, GCallback callback_func);
+bool cterm_register_accel(CTerm* term, const char* keyspec, GCallback callback_func);
 void cterm_init_config_defaults(CTerm* term);
 void cterm_reread_config(CTerm* term);
 
