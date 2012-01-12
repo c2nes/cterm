@@ -122,24 +122,24 @@ void cterm_init_config_defaults(CTerm* term) {
     term->config.confirm_close_tab = true;
 
     /* Initialize colors */
-    cterm_parse_color("#000", &(term->config.background));
-    cterm_parse_color("#FFF", &(term->config.foreground));
-    cterm_parse_color("#000", &(term->config.colors[0]));
-    cterm_parse_color("#A00", &(term->config.colors[1]));
-    cterm_parse_color("#0A0", &(term->config.colors[2]));
-    cterm_parse_color("#A50", &(term->config.colors[3]));
-    cterm_parse_color("#00A", &(term->config.colors[4]));
-    cterm_parse_color("#A0A", &(term->config.colors[5]));
-    cterm_parse_color("#0AA", &(term->config.colors[6]));
-    cterm_parse_color("#AAA", &(term->config.colors[7]));
-    cterm_parse_color("#555", &(term->config.colors[8]));
-    cterm_parse_color("#F55", &(term->config.colors[9]));
-    cterm_parse_color("#5F5", &(term->config.colors[10]));
-    cterm_parse_color("#FF5", &(term->config.colors[11]));
-    cterm_parse_color("#55F", &(term->config.colors[12]));
-    cterm_parse_color("#F5F", &(term->config.colors[13]));
-    cterm_parse_color("#5FF", &(term->config.colors[14]));
-    cterm_parse_color("#FFF", &(term->config.colors[15]));
+    gdk_color_parse("#000", &(term->config.background));
+    gdk_color_parse("#FFF", &(term->config.foreground));
+    gdk_color_parse("#000", &(term->config.colors[0]));
+    gdk_color_parse("#A00", &(term->config.colors[1]));
+    gdk_color_parse("#0A0", &(term->config.colors[2]));
+    gdk_color_parse("#A50", &(term->config.colors[3]));
+    gdk_color_parse("#00A", &(term->config.colors[4]));
+    gdk_color_parse("#A0A", &(term->config.colors[5]));
+    gdk_color_parse("#0AA", &(term->config.colors[6]));
+    gdk_color_parse("#AAA", &(term->config.colors[7]));
+    gdk_color_parse("#555", &(term->config.colors[8]));
+    gdk_color_parse("#F55", &(term->config.colors[9]));
+    gdk_color_parse("#5F5", &(term->config.colors[10]));
+    gdk_color_parse("#FF5", &(term->config.colors[11]));
+    gdk_color_parse("#55F", &(term->config.colors[12]));
+    gdk_color_parse("#F5F", &(term->config.colors[13]));
+    gdk_color_parse("#5FF", &(term->config.colors[14]));
+    gdk_color_parse("#FFF", &(term->config.colors[15]));
 }
 
 static char* cterm_read_line(FILE* f) {
@@ -277,41 +277,41 @@ static bool cterm_config_process_line(CTerm* term, const char* option, const cha
 
         /* Color options */
     } else if(strcmp(option, "foreground") == 0) {
-        cterm_parse_color(value, &(term->config.foreground));
+        gdk_color_parse(value, &(term->config.foreground));
     } else if(strcmp(option, "background") == 0) {
-        cterm_parse_color(value, &(term->config.background));
+        gdk_color_parse(value, &(term->config.background));
     } else if(strcmp(option, "color_0") == 0) {
-        cterm_parse_color(value, &(term->config.colors[0]));
+        gdk_color_parse(value, &(term->config.colors[0]));
     } else if(strcmp(option, "color_1") == 0) {
-        cterm_parse_color(value, &(term->config.colors[1]));
+        gdk_color_parse(value, &(term->config.colors[1]));
     } else if(strcmp(option, "color_2") == 0) {
-        cterm_parse_color(value, &(term->config.colors[2]));
+        gdk_color_parse(value, &(term->config.colors[2]));
     } else if(strcmp(option, "color_3") == 0) {
-        cterm_parse_color(value, &(term->config.colors[3]));
+        gdk_color_parse(value, &(term->config.colors[3]));
     } else if(strcmp(option, "color_4") == 0) {
-        cterm_parse_color(value, &(term->config.colors[4]));
+        gdk_color_parse(value, &(term->config.colors[4]));
     } else if(strcmp(option, "color_5") == 0) {
-        cterm_parse_color(value, &(term->config.colors[5]));
+        gdk_color_parse(value, &(term->config.colors[5]));
     } else if(strcmp(option, "color_6") == 0) {
-        cterm_parse_color(value, &(term->config.colors[6]));
+        gdk_color_parse(value, &(term->config.colors[6]));
     } else if(strcmp(option, "color_7") == 0) {
-        cterm_parse_color(value, &(term->config.colors[7]));
+        gdk_color_parse(value, &(term->config.colors[7]));
     } else if(strcmp(option, "color_8") == 0) {
-        cterm_parse_color(value, &(term->config.colors[8]));
+        gdk_color_parse(value, &(term->config.colors[8]));
     } else if(strcmp(option, "color_9") == 0) {
-        cterm_parse_color(value, &(term->config.colors[9]));
+        gdk_color_parse(value, &(term->config.colors[9]));
     } else if(strcmp(option, "color_10") == 0) {
-        cterm_parse_color(value, &(term->config.colors[10]));
+        gdk_color_parse(value, &(term->config.colors[10]));
     } else if(strcmp(option, "color_11") == 0) {
-        cterm_parse_color(value, &(term->config.colors[11]));
+        gdk_color_parse(value, &(term->config.colors[11]));
     } else if(strcmp(option, "color_12") == 0) {
-        cterm_parse_color(value, &(term->config.colors[12]));
+        gdk_color_parse(value, &(term->config.colors[12]));
     } else if(strcmp(option, "color_13") == 0) {
-        cterm_parse_color(value, &(term->config.colors[13]));
+        gdk_color_parse(value, &(term->config.colors[13]));
     } else if(strcmp(option, "color_14") == 0) {
-        cterm_parse_color(value, &(term->config.colors[14]));
+        gdk_color_parse(value, &(term->config.colors[14]));
     } else if(strcmp(option, "color_15") == 0) {
-        cterm_parse_color(value, &(term->config.colors[15]));
+        gdk_color_parse(value, &(term->config.colors[15]));
 
         /* Accels that start with "key_" */
     } else if(strncmp(option, "key_", 4) == 0) {

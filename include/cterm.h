@@ -108,7 +108,6 @@ VteTerminal* cterm_get_vte(CTerm* term, gint page_num);
 VteTerminal* cterm_get_current_vte(CTerm* term);
 void cterm_string_tolower(char* buffer);
 void cterm_string_strip(char* buffer);
-bool cterm_parse_color(const char* color_spec, GdkColor* color);
 GtkWidget* cterm_new_label(const char* str);
 bool cterm_term_has_foreground_process(CTerm* term);
 bool cterm_vte_has_foreground_process(CTerm* term, VteTerminal* vte);
