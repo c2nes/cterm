@@ -9,9 +9,30 @@ gboolean cterm_onfocus(GtkWidget* w, GdkEventFocus* e, gpointer data) {
 
 gboolean cterm_onclick(GtkWidget* w, GdkEventButton* e, gpointer data) {
     CTerm* term = (CTerm*) data;
+    char* match = NULL;
+    VteTerminal* vte = cterm_get_current_vte(term);
+    GtkBorder* inner_border;
+    glong col, row;
+    int char_width, char_height;
+    int tag;
 
-    if(e->button == 3) {
+    if(e->type == GDK_BUTTON_PRESS && e->button == 3) {
         cterm_run_external(term);
+
+    } else if (e->type == GDK_2BUTTON_PRESS && e->button == 1) {
+        char_width = vte_terminal_get_char_width(VTE_TERMINAL(vte));
+        char_height = vte_terminal_get_char_height(VTE_TERMINAL(vte));
+
+        gtk_widget_style_get(GTK_WIDGET(vte), "inner-border", &inner_border, NULL);
+        row = (e->y - (inner_border ? inner_border->top : 0)) / char_height;
+        col = (e->x - (inner_border ? inner_border->left : 0)) / char_width;
+        gtk_border_free (inner_border);
+
+        match = vte_terminal_match_check(vte, col, row, &tag);
+        if (match != NULL) {
+            cterm_open_url(term, match);
+            free(match);
+        }
     }
 
     return FALSE;

@@ -50,9 +50,13 @@ background = #000
 transparent = false
 opacity = 80
 
-# Run this program and pass the selected text to it when key_run is activated
-# or the left mouse button is clicked
+# Run this program and pass the selected text to it via stdin when key_run is
+# activated or the left mouse button is clicked
 external_program = cterm_run
+
+# Run this program when a URL is double clicked on and pass the URL as the
+# first argument.
+url_program = htmlview
 
 # Palette for output
 color_0 = #000

@@ -63,6 +63,7 @@ typedef struct {
         bool confirm_close_tab;
 
         char* external_program;
+        char* url_program;
     } config;
 } CTerm;
 
@@ -119,5 +120,6 @@ void cterm_set_term_size(CTerm* term,
                          unsigned short height,
                          enum cterm_length_unit width_unit,
                          enum cterm_length_unit height_unit);
+void cterm_open_url(CTerm* term, char* url);
 
 #endif // #ifndef _CTERM_INCLUDE_H

@@ -1,6 +1,18 @@
 
 #include "cterm.h"
 
+/* This URL regex taken from gnome-terminal.
+ * See top of terminal-screen.c */
+#define HOSTCHARS_CLASS "[-[:alnum:]]"
+#define HOST HOSTCHARS_CLASS "+(\\." HOSTCHARS_CLASS "+)*"
+#define PORT "(?:\\:[[:digit:]]{1,5})?"
+#define PATHCHARS_CLASS "[-[:alnum:]\\Q_$.+!*,:;@&=?/~#%\\E]"
+#define PATHTERM_CLASS "[^\\Q]'.:}>) \t\r\n,\"\\E]"
+#define URLPATH   "(?:(/"PATHCHARS_CLASS"+(?:[(]"PATHCHARS_CLASS"*[)])*"PATHCHARS_CLASS"*)*"PATHTERM_CLASS"?)?"
+static const char* url_regex_pattern = "(?:http://)?(?:www|ftp)" HOSTCHARS_CLASS "*\\." HOST PORT URLPATH;
+
+static GRegex* url_regex;
+
 static void cterm_set_vte_properties(CTerm* term, VteTerminal* vte);
 
 void cterm_switch_to_tab_1(CTerm* term) {
@@ -75,6 +87,7 @@ void cterm_open_tab(CTerm* term) {
     GtkWidget* scrollbar;
     GtkWidget* title;
     GdkGeometry hints;
+    GError* error = NULL;
     pid_t* new_pid = malloc(sizeof(pid_t));
 
     term->count++;
@@ -103,6 +116,7 @@ void cterm_open_tab(CTerm* term) {
     g_signal_connect(new_vte, "focus-in-event", G_CALLBACK(cterm_onfocus), term);
     g_signal_connect(new_vte, "window-title-changed", G_CALLBACK(cterm_ontitlechange), term);
     g_signal_connect(new_vte, "button-release-event", G_CALLBACK(cterm_onclick), term);
+    g_signal_connect(new_vte, "button-press-event", G_CALLBACK(cterm_onclick), term);
 
     /* Set geometry information */
     hints.base_width = new_vte->char_width;
@@ -116,6 +130,20 @@ void cterm_open_tab(CTerm* term) {
 
     /* Construct tab title */
     title = cterm_new_label("cterm");
+
+    /* Highlight URLs */
+    if (url_regex == NULL) {
+        url_regex = g_regex_new(url_regex_pattern, G_REGEX_CASELESS | G_REGEX_OPTIMIZE, 0, &error);
+        if (error) {
+            url_regex = NULL;
+            fprintf(stderr, "URL Regex could not be compiled!\n");
+            fprintf(stderr, "Code: %d\n", error->code);
+            fprintf(stderr, "Message: %s\n", error->message);
+        }
+    }
+    if (url_regex != NULL) {
+        vte_terminal_match_add_gregex(new_vte, url_regex, 0);
+    }
 
     /* Create scrollbar for widget */
     scrollbar = gtk_vscrollbar_new(new_vte->adjustment);
@@ -226,7 +254,7 @@ void cterm_run_external(CTerm* term) {
             pipe(fp);
 
             if(fork() == 0) {
-                /* Parent */
+                /* Child */
                 close(fp[1]);
                 dup2(fp[0], STDIN_FILENO);
                 execlp(term->config.external_program, term->config.external_program, NULL);

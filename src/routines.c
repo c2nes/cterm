@@ -211,3 +211,15 @@ void cterm_set_term_size(CTerm* term,
     gtk_window_resize(GTK_WINDOW(term->window), new_width, new_height);
 
 }
+
+void cterm_open_url(CTerm* term, char* url) {
+    if (term->config.url_program == NULL) {
+        return;
+    }
+    if(fork() == 0) {
+        /* Child */
+        execlp(term->config.url_program, term->config.url_program, url, NULL);
+        perror("Could not open program");
+        _exit(-1);
+    }
+}
