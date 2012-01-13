@@ -213,7 +213,7 @@ void cterm_set_term_size(CTerm* term,
 }
 
 void cterm_open_url(CTerm* term, char* url) {
-    if (term->config.url_program == NULL) {
+    if(term->config.url_program == NULL) {
         return;
     }
     if(fork() == 0) {

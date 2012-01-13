@@ -132,16 +132,16 @@ void cterm_open_tab(CTerm* term) {
     title = cterm_new_label("cterm");
 
     /* Highlight URLs */
-    if (url_regex == NULL) {
+    if(url_regex == NULL) {
         url_regex = g_regex_new(url_regex_pattern, G_REGEX_CASELESS | G_REGEX_OPTIMIZE, 0, &error);
-        if (error) {
+        if(error) {
             url_regex = NULL;
             fprintf(stderr, "URL Regex could not be compiled!\n");
             fprintf(stderr, "Code: %d\n", error->code);
             fprintf(stderr, "Message: %s\n", error->message);
         }
     }
-    if (url_regex != NULL) {
+    if(url_regex != NULL) {
         vte_terminal_match_add_gregex(new_vte, url_regex, 0);
     }
 

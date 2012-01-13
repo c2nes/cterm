@@ -52,7 +52,7 @@ bool cterm_register_accel(CTerm* term, const char* keyspec, GCallback callback_f
     }
 
     gtk_accelerator_parse(keyspec, &key, &mod);
-    if (key == 0 || mod == 0) {
+    if(key == 0 || mod == 0) {
         return false;
     }
     closure = g_cclosure_new_swap(callback_func, (gpointer)term, NULL);
@@ -319,13 +319,13 @@ static bool cterm_config_process_line(CTerm* term, const char* option, const cha
         /* Accels that start with "key_" */
     } else if(strncmp(option, "key_", 4) == 0) {
         found_option = false;
-        for (i=0; ; i++) {
+        for(i=0; ; i++) {
             KeyOption key_option = key_options[i];
-            if (key_option.name == NULL || key_option.callback == NULL) {
+            if(key_option.name == NULL || key_option.callback == NULL) {
                 break;
             }
-            if (strcmp(option+4, key_option.name) == 0) {
-                if (!cterm_register_accel(term, value, G_CALLBACK(key_option.callback))) {
+            if(strcmp(option+4, key_option.name) == 0) {
+                if(!cterm_register_accel(term, value, G_CALLBACK(key_option.callback))) {
                     fprintf(stderr, "Key acceleration '%s' could not be parsed at line %d\n", value, line_num);
                     return false;
                 }
@@ -339,7 +339,7 @@ static bool cterm_config_process_line(CTerm* term, const char* option, const cha
     }
 
     /* Unknown option */
-    if (!found_option) {
+    if(!found_option) {
         fprintf(stderr, "Unknown config option '%s' at line %d\n", option, line_num);
         return false;
     }

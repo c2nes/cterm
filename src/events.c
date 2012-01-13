@@ -19,17 +19,17 @@ gboolean cterm_onclick(GtkWidget* w, GdkEventButton* e, gpointer data) {
     if(e->type == GDK_BUTTON_PRESS && e->button == 3) {
         cterm_run_external(term);
 
-    } else if (e->type == GDK_2BUTTON_PRESS && e->button == 1) {
+    } else if(e->type == GDK_2BUTTON_PRESS && e->button == 1) {
         char_width = vte_terminal_get_char_width(VTE_TERMINAL(vte));
         char_height = vte_terminal_get_char_height(VTE_TERMINAL(vte));
 
         gtk_widget_style_get(GTK_WIDGET(vte), "inner-border", &inner_border, NULL);
         row = (e->y - (inner_border ? inner_border->top : 0)) / char_height;
         col = (e->x - (inner_border ? inner_border->left : 0)) / char_width;
-        gtk_border_free (inner_border);
+        gtk_border_free(inner_border);
 
         match = vte_terminal_match_check(vte, col, row, &tag);
-        if (match != NULL) {
+        if(match != NULL) {
             cterm_open_url(term, match);
             free(match);
         }
@@ -115,7 +115,7 @@ void cterm_close_dialog_onresponse(GtkWidget* dialog, int response, gpointer dat
     pid_t* pid = (pid_t*) data;  /* Process to kill if not NULL */
     gtk_widget_destroy(dialog);
     if(response == GTK_RESPONSE_ACCEPT) {
-        if (pid != NULL) {
+        if(pid != NULL) {
             kill(*pid, SIGKILL);
         } else {
             gtk_main_quit();
