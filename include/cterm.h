@@ -57,14 +57,15 @@ typedef struct {
         bool audible_bell;
         bool visible_bell;
 
+        VteTerminalEraseBinding backspace_behavior;
+
+        bool confirm_close_window;
+        bool confirm_close_tab;
+
         char* external_program;
+        char* url_program;
     } config;
 } CTerm;
-
-typedef struct {
-    const char* keyspec;
-    void (*callback)(CTerm*);
-} KeyBinding;
 
 /* actions.c */
 void cterm_switch_to_tab_1(CTerm* term);
@@ -81,9 +82,15 @@ void cterm_open_tab(CTerm* term);
 void cterm_close_tab(CTerm* term);
 void cterm_reload(CTerm* term);
 void cterm_run_external(CTerm* term);
+void cterm_increase_font_size(CTerm* term);
+void cterm_decrease_font_size(CTerm* term);
+void cterm_select_all(CTerm* term);
+void cterm_select_none(CTerm* term);
+void cterm_copy_text(CTerm* term);
+void cterm_paste_text(CTerm* term);
 
 /* config.c */
-void cterm_register_accel(CTerm* term, const char* keyspec, GCallback callback_func);
+bool cterm_register_accel(CTerm* term, const char* keyspec, GCallback callback_func);
 void cterm_init_config_defaults(CTerm* term);
 void cterm_reread_config(CTerm* term);
 
@@ -94,12 +101,25 @@ void cterm_onbeep(VteTerminal * vte, gpointer data);
 void cterm_onchildexit(VteTerminal* vte, gpointer data);
 void cterm_ontabchange(GtkNotebook* notebook, GtkNotebookPage* page, guint page_num, gpointer data);
 void cterm_ontitlechange(VteTerminal* vte, gpointer data);
+gboolean cterm_onwindowclose(GtkWidget* window, GdkEvent* event, gpointer data);
+void cterm_close_dialog_onresponse(GtkWidget* dialog, int response, gpointer data);
 
 /* routines.c */
 VteTerminal* cterm_get_vte(CTerm* term, gint page_num);
+VteTerminal* cterm_get_current_vte(CTerm* term);
 void cterm_string_tolower(char* buffer);
 void cterm_string_strip(char* buffer);
-bool cterm_parse_color(const char* color_spec, GdkColor* color);
 GtkWidget* cterm_new_label(const char* str);
+bool cterm_term_has_foreground_process(CTerm* term);
+bool cterm_vte_has_foreground_process(CTerm* term, VteTerminal* vte);
+gint cterm_get_font_size(CTerm* term);
+void cterm_set_font_size(CTerm* term, gint size);
+void cterm_set_font_size_relative(CTerm* term, gint delta);
+void cterm_set_term_size(CTerm* term,
+                         unsigned short width,
+                         unsigned short height,
+                         enum cterm_length_unit width_unit,
+                         enum cterm_length_unit height_unit);
+void cterm_open_url(CTerm* term, char* url);
 
 #endif // #ifndef _CTERM_INCLUDE_H

@@ -1,6 +1,18 @@
 
 #include "cterm.h"
 
+/* This URL regex taken from gnome-terminal.
+ * See top of terminal-screen.c */
+#define HOSTCHARS_CLASS "[-[:alnum:]]"
+#define HOST HOSTCHARS_CLASS "+(\\." HOSTCHARS_CLASS "+)*"
+#define PORT "(?:\\:[[:digit:]]{1,5})?"
+#define PATHCHARS_CLASS "[-[:alnum:]\\Q_$.+!*,:;@&=?/~#%\\E]"
+#define PATHTERM_CLASS "[^\\Q]'.:}>) \t\r\n,\"\\E]"
+#define URLPATH   "(?:(/"PATHCHARS_CLASS"+(?:[(]"PATHCHARS_CLASS"*[)])*"PATHCHARS_CLASS"*)*"PATHTERM_CLASS"?)?"
+static const char* url_regex_pattern = "(?:http://)?(?:www|ftp)" HOSTCHARS_CLASS "*\\." HOST PORT URLPATH;
+
+static GRegex* url_regex;
+
 static void cterm_set_vte_properties(CTerm* term, VteTerminal* vte);
 
 void cterm_switch_to_tab_1(CTerm* term) {
@@ -56,6 +68,8 @@ static void cterm_set_vte_properties(CTerm* term, VteTerminal* vte) {
     vte_terminal_set_audible_bell(vte, term->config.audible_bell);
     vte_terminal_set_visible_bell(vte, term->config.visible_bell);
 
+    vte_terminal_set_backspace_binding(vte, term->config.backspace_behavior);
+
     if(term->config.transparent) {
         vte_terminal_set_background_tint_color(vte, &(term->config.background));
         vte_terminal_set_background_saturation(vte, 1.0 - term->config.opacity);
@@ -73,6 +87,7 @@ void cterm_open_tab(CTerm* term) {
     GtkWidget* scrollbar;
     GtkWidget* title;
     GdkGeometry hints;
+    GError* error = NULL;
     pid_t* new_pid = malloc(sizeof(pid_t));
 
     term->count++;
@@ -101,6 +116,7 @@ void cterm_open_tab(CTerm* term) {
     g_signal_connect(new_vte, "focus-in-event", G_CALLBACK(cterm_onfocus), term);
     g_signal_connect(new_vte, "window-title-changed", G_CALLBACK(cterm_ontitlechange), term);
     g_signal_connect(new_vte, "button-release-event", G_CALLBACK(cterm_onclick), term);
+    g_signal_connect(new_vte, "button-press-event", G_CALLBACK(cterm_onclick), term);
 
     /* Set geometry information */
     hints.base_width = new_vte->char_width;
@@ -109,30 +125,44 @@ void cterm_open_tab(CTerm* term) {
     hints.min_height = new_vte->char_height;
     hints.width_inc = new_vte->char_width;
     hints.height_inc = new_vte->char_height;
-    gtk_window_set_geometry_hints (GTK_WINDOW (term->window), GTK_WIDGET (new_vte), &hints,
-                                   GDK_HINT_RESIZE_INC | GDK_HINT_MIN_SIZE | GDK_HINT_BASE_SIZE);
+    gtk_window_set_geometry_hints(GTK_WINDOW(term->window), GTK_WIDGET(new_vte), &hints,
+                                  GDK_HINT_RESIZE_INC | GDK_HINT_MIN_SIZE | GDK_HINT_BASE_SIZE);
 
     /* Construct tab title */
     title = cterm_new_label("cterm");
+
+    /* Highlight URLs */
+    if(url_regex == NULL) {
+        url_regex = g_regex_new(url_regex_pattern, G_REGEX_CASELESS | G_REGEX_OPTIMIZE, 0, &error);
+        if(error) {
+            url_regex = NULL;
+            fprintf(stderr, "URL Regex could not be compiled!\n");
+            fprintf(stderr, "Code: %d\n", error->code);
+            fprintf(stderr, "Message: %s\n", error->message);
+        }
+    }
+    if(url_regex != NULL) {
+        vte_terminal_match_add_gregex(new_vte, url_regex, 0);
+    }
 
     /* Create scrollbar for widget */
     scrollbar = gtk_vscrollbar_new(new_vte->adjustment);
 
     box = gtk_hbox_new(false, 0);
-    gtk_box_pack_start (GTK_BOX (box), GTK_WIDGET (new_vte), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(new_vte), TRUE, TRUE, 0);
     if(term->config.scrollbar == GTK_POLICY_ALWAYS) {
-        gtk_box_pack_start (GTK_BOX (box), scrollbar, FALSE, FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(box), scrollbar, FALSE, FALSE, 0);
     }
     gtk_widget_show_all(box);
 
     /* Add to notebook */
-    gtk_notebook_append_page(term->notebook, GTK_WIDGET (box), title);
-    gtk_notebook_set_tab_reorderable(term->notebook, GTK_WIDGET (box), TRUE);
-    gtk_notebook_set_tab_label_packing(term->notebook, GTK_WIDGET (box), TRUE, TRUE, GTK_PACK_START);
+    gtk_notebook_append_page(term->notebook, GTK_WIDGET(box), title);
+    gtk_notebook_set_tab_reorderable(term->notebook, GTK_WIDGET(box), TRUE);
+    gtk_notebook_set_tab_label_packing(term->notebook, GTK_WIDGET(box), TRUE, TRUE, GTK_PACK_START);
     gtk_notebook_set_current_page(term->notebook, term->count - 1);
 
     /* Place focus in VTE */
-    gtk_widget_grab_focus(GTK_WIDGET (new_vte));
+    gtk_widget_grab_focus(GTK_WIDGET(new_vte));
 
     if(term->count == 2) {
         gtk_notebook_set_show_tabs(term->notebook, TRUE);
@@ -140,10 +170,32 @@ void cterm_open_tab(CTerm* term) {
 }
 
 void cterm_close_tab(CTerm* term) {
-    gint p = gtk_notebook_get_current_page(term->notebook);
-    VteTerminal* vte = cterm_get_vte(term, p);
+    VteTerminal* vte = cterm_get_current_vte(term);
     pid_t* pid = (pid_t*) g_hash_table_lookup(term->terminal_procs, (gpointer)vte);
-    kill(*pid, SIGKILL);
+    GtkWidget* dialog;
+
+    if(term->config.confirm_close_tab && cterm_vte_has_foreground_process(term, vte)) {
+
+        /* Process is running in tab!  Prompt user. */
+        dialog = gtk_message_dialog_new(GTK_WINDOW(term->window),
+                                        GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                        GTK_MESSAGE_WARNING,
+                                        GTK_BUTTONS_CANCEL,
+                                        "Close Tab?");
+        gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog), "Tab has a running process.  Still close?");
+        gtk_window_set_title(GTK_WINDOW(dialog), "");
+        gtk_dialog_add_button(GTK_DIALOG(dialog), "C_lose Tab", GTK_RESPONSE_ACCEPT);
+        gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
+        gtk_dialog_set_alternative_button_order(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT, GTK_RESPONSE_CANCEL, -1);
+        g_signal_connect(dialog, "response", G_CALLBACK(cterm_close_dialog_onresponse), pid);
+        gtk_window_present(GTK_WINDOW(dialog));
+
+    } else {
+
+        /* Nothing running in tab, just kill */
+        kill(*pid, SIGKILL);
+
+    }
 }
 
 void cterm_reload(CTerm* term) {
@@ -162,18 +214,18 @@ void cterm_reload(CTerm* term) {
     /* Reconfigure all terminals */
     for(int i = 0; i < term->count; i++) {
         box = gtk_notebook_get_nth_page(term->notebook, i);
-        children = gtk_container_get_children(GTK_CONTAINER (box));
+        children = gtk_container_get_children(GTK_CONTAINER(box));
         node = children;
         has_scrollbar = false;
         vte = NULL;
 
         while(node != NULL) {
-            if(VTE_IS_TERMINAL (node->data)) {
-                vte = VTE_TERMINAL (node->data);
+            if(VTE_IS_TERMINAL(node->data)) {
+                vte = VTE_TERMINAL(node->data);
                 cterm_set_vte_properties(term, vte);
-            } else if(GTK_IS_VSCROLLBAR (node->data)) {
+            } else if(GTK_IS_VSCROLLBAR(node->data)) {
                 if(term->config.scrollbar == GTK_POLICY_NEVER) {
-                    gtk_container_remove(GTK_CONTAINER (box), GTK_WIDGET (node->data));
+                    gtk_container_remove(GTK_CONTAINER(box), GTK_WIDGET(node->data));
                 }
                 has_scrollbar = true;
             }
@@ -182,7 +234,7 @@ void cterm_reload(CTerm* term) {
 
         if(has_scrollbar == false && term->config.scrollbar == GTK_POLICY_ALWAYS) {
             scrollbar = gtk_vscrollbar_new(vte->adjustment);
-            gtk_box_pack_start (GTK_BOX (box), scrollbar, FALSE, FALSE, 0);
+            gtk_box_pack_start(GTK_BOX(box), scrollbar, FALSE, FALSE, 0);
             gtk_widget_show_all(box);
         }
 
@@ -191,8 +243,7 @@ void cterm_reload(CTerm* term) {
 }
 
 void cterm_run_external(CTerm* term) {
-    gint p = gtk_notebook_get_current_page(term->notebook);
-    VteTerminal* vte = cterm_get_vte(term, p);
+    VteTerminal* vte = cterm_get_current_vte(term);
     char* data;
     int fp[2];
 
@@ -203,7 +254,7 @@ void cterm_run_external(CTerm* term) {
             pipe(fp);
 
             if(fork() == 0) {
-                /* Parent */
+                /* Child */
                 close(fp[1]);
                 dup2(fp[0], STDIN_FILENO);
                 execlp(term->config.external_program, term->config.external_program, NULL);
@@ -218,4 +269,32 @@ void cterm_run_external(CTerm* term) {
             close(fp[1]);
         }
     }
+}
+
+void cterm_increase_font_size(CTerm* term) {
+    cterm_set_font_size_relative(term, (gint) 2*PANGO_SCALE);
+}
+
+void cterm_decrease_font_size(CTerm* term) {
+    cterm_set_font_size_relative(term, (gint) -2*PANGO_SCALE);
+}
+
+void cterm_select_all(CTerm* term) {
+    VteTerminal* vte = cterm_get_current_vte(term);
+    vte_terminal_select_all(vte);
+}
+
+void cterm_select_none(CTerm* term) {
+    VteTerminal* vte = cterm_get_current_vte(term);
+    vte_terminal_select_none(vte);
+}
+
+void cterm_copy_text(CTerm* term) {
+    VteTerminal* vte = cterm_get_current_vte(term);
+    vte_terminal_copy_clipboard(vte);
+}
+
+void cterm_paste_text(CTerm* term) {
+    VteTerminal* vte = cterm_get_current_vte(term);
+    vte_terminal_paste_clipboard(vte);
 }
