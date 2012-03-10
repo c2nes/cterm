@@ -4,6 +4,14 @@
 int main(int argc, char** argv) {
     CTerm term;
     GtkRcStyle* style;
+    struct sigaction ignore_children;
+
+    /* Avoid zombies when executing external programs by explicitly setting the
+       handler to SIG_IGN */
+    ignore_children.sa_handler = SIG_IGN;
+    ignore_children.sa_flags = 0;
+    sigemptyset(&ignore_children.sa_mask);
+    sigaction(SIGCHLD, &ignore_children, NULL);
 
     /* Initialize GTK */
     gtk_init(&argc, &argv);
