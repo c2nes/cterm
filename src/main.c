@@ -62,27 +62,10 @@ int main(int argc, char** argv) {
     /* Open initial tab */
     cterm_open_tab(&term);
 
-    /* Get char width & height */
-    if(term.config.width_unit == CTERM_UNIT_CHAR || term.config.height_unit == CTERM_UNIT_CHAR) {
-        vte = cterm_get_vte(&term, (gint) 0);
-        gtk_widget_style_get(GTK_WIDGET(vte), "inner-border", &border, NULL);
-        char_width = vte_terminal_get_char_width(VTE_TERMINAL(vte));
-        char_height = vte_terminal_get_char_height(VTE_TERMINAL(vte));
-    }
-
-    /* Set term width and height.
-       Convert from characters to pixels if needed. */
-    term_width = term.config.initial_width;
-    term_height = term.config.initial_height;
-    if(term.config.width_unit == CTERM_UNIT_CHAR) {
-        term_width = term_width*char_width + border->left + border->right;
-    }
-    if(term.config.height_unit == CTERM_UNIT_CHAR) {
-        term_height = term_height*char_height + border->top + border->bottom;
-    }
-    gtk_widget_set_size_request(GTK_WIDGET(term.window),
-                                term_width,
-                                term_height);
+    /* Resize Window */
+    cterm_set_term_size(&term,
+                        term.config.initial_width, term.config.initial_height,
+                        term.config.width_unit, term.config.height_unit);
 
     /* Show window and enter main event loop */
     gtk_widget_show_all(GTK_WIDGET(term.window));
