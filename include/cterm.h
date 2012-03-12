@@ -63,6 +63,8 @@ typedef struct {
         bool confirm_close_tab;
 
         char* external_program;
+
+        bool underline_urls;
         char* url_program;
     } config;
 } CTerm;

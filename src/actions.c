@@ -56,6 +56,8 @@ void cterm_switch_to_tab_10(CTerm* term) {
 }
 
 static void cterm_set_vte_properties(CTerm* term, VteTerminal* vte) {
+    GError* error = NULL;
+
     if(term->config.word_chars) {
         vte_terminal_set_word_chars(vte, term->config.word_chars);
     }
@@ -79,6 +81,23 @@ static void cterm_set_vte_properties(CTerm* term, VteTerminal* vte) {
     if(term->config.font != NULL) {
         vte_terminal_set_font_from_string(vte, term->config.font);
     }
+
+    /* Highlight URLs */
+    if(term->config.underline_urls && url_regex == NULL) {
+        url_regex = g_regex_new(url_regex_pattern, G_REGEX_CASELESS | G_REGEX_OPTIMIZE, 0, &error);
+        if(error) {
+            url_regex = NULL;
+            fprintf(stderr, "URL Regex could not be compiled!\n");
+            fprintf(stderr, "Code: %d\n", error->code);
+            fprintf(stderr, "Message: %s\n", error->message);
+        }
+    }
+    if (term->config.underline_urls) {
+        vte_terminal_match_add_gregex(vte, url_regex, 0);
+    } else {
+        vte_terminal_match_clear_all(vte);
+    }
+
 }
 
 void cterm_open_tab(CTerm* term) {
@@ -87,7 +106,6 @@ void cterm_open_tab(CTerm* term) {
     GtkWidget* scrollbar;
     GtkWidget* title;
     GdkGeometry hints;
-    GError* error = NULL;
     pid_t* new_pid = malloc(sizeof(pid_t));
 
     term->count++;
@@ -130,20 +148,6 @@ void cterm_open_tab(CTerm* term) {
 
     /* Construct tab title */
     title = cterm_new_label("cterm");
-
-    /* Highlight URLs */
-    if(url_regex == NULL) {
-        url_regex = g_regex_new(url_regex_pattern, G_REGEX_CASELESS | G_REGEX_OPTIMIZE, 0, &error);
-        if(error) {
-            url_regex = NULL;
-            fprintf(stderr, "URL Regex could not be compiled!\n");
-            fprintf(stderr, "Code: %d\n", error->code);
-            fprintf(stderr, "Message: %s\n", error->message);
-        }
-    }
-    if(url_regex != NULL) {
-        vte_terminal_match_add_gregex(new_vte, url_regex, 0);
-    }
 
     /* Create scrollbar for widget */
     scrollbar = gtk_vscrollbar_new(new_vte->adjustment);

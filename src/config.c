@@ -110,6 +110,7 @@ void cterm_init_config_defaults(CTerm* term) {
     /* Default (no) programs */
     term->config.external_program = NULL;
     term->config.url_program = NULL;
+    term->config.underline_urls = true;
 
     /* Disable audible and visible bell */
     term->config.audible_bell = false;
@@ -249,6 +250,8 @@ static bool cterm_config_process_line(CTerm* term, const char* option, const cha
         term->config.external_program = strdup(value);
     } else if(strcmp(option, "url_program") == 0) {
         term->config.url_program = strdup(value);
+    } else if(strcmp(option, "underline_urls") == 0) {
+        term->config.underline_urls = cterm_config_true_value(value);
     } else if(strcmp(option, "audible_bell") == 0) {
         term->config.audible_bell = cterm_config_true_value(value);
     } else if(strcmp(option, "visible_bell") == 0) {

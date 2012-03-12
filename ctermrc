@@ -54,6 +54,9 @@ opacity = 80
 # activated or the left mouse button is clicked
 external_program = cterm_run
 
+# Underline URLS on mouse hover.  If false, disables url_program.
+underline_urls = true
+
 # Run this program when a URL is double clicked on and pass the URL as the
 # first argument.
 url_program = htmlview
