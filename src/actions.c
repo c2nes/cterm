@@ -15,44 +15,54 @@ static GRegex* url_regex;
 
 static void cterm_set_vte_properties(CTerm* term, VteTerminal* vte);
 
-void cterm_switch_to_tab_1(CTerm* term) {
+gboolean cterm_switch_to_tab_1(CTerm* term) {
     gtk_notebook_set_current_page(term->notebook, 0);
+    return TRUE;
 }
 
-void cterm_switch_to_tab_2(CTerm* term) {
+gboolean cterm_switch_to_tab_2(CTerm* term) {
     gtk_notebook_set_current_page(term->notebook, 1);
+    return TRUE;
 }
 
-void cterm_switch_to_tab_3(CTerm* term) {
+gboolean cterm_switch_to_tab_3(CTerm* term) {
     gtk_notebook_set_current_page(term->notebook, 2);
+    return TRUE;
 }
 
-void cterm_switch_to_tab_4(CTerm* term) {
+gboolean cterm_switch_to_tab_4(CTerm* term) {
     gtk_notebook_set_current_page(term->notebook, 3);
+    return TRUE;
 }
 
-void cterm_switch_to_tab_5(CTerm* term) {
+gboolean cterm_switch_to_tab_5(CTerm* term) {
     gtk_notebook_set_current_page(term->notebook, 4);
+    return TRUE;
 }
 
-void cterm_switch_to_tab_6(CTerm* term) {
+gboolean cterm_switch_to_tab_6(CTerm* term) {
     gtk_notebook_set_current_page(term->notebook, 5);
+    return TRUE;
 }
 
-void cterm_switch_to_tab_7(CTerm* term) {
+gboolean cterm_switch_to_tab_7(CTerm* term) {
     gtk_notebook_set_current_page(term->notebook, 6);
+    return TRUE;
 }
 
-void cterm_switch_to_tab_8(CTerm* term) {
+gboolean cterm_switch_to_tab_8(CTerm* term) {
     gtk_notebook_set_current_page(term->notebook, 7);
+    return TRUE;
 }
 
-void cterm_switch_to_tab_9(CTerm* term) {
+gboolean cterm_switch_to_tab_9(CTerm* term) {
     gtk_notebook_set_current_page(term->notebook, 8);
+    return TRUE;
 }
 
-void cterm_switch_to_tab_10(CTerm* term) {
+gboolean cterm_switch_to_tab_10(CTerm* term) {
     gtk_notebook_set_current_page(term->notebook, 9);
+    return TRUE;
 }
 
 static void cterm_set_vte_properties(CTerm* term, VteTerminal* vte) {
@@ -69,6 +79,7 @@ static void cterm_set_vte_properties(CTerm* term, VteTerminal* vte) {
     vte_terminal_set_scrollback_lines(vte, term->config.scrollback);
     vte_terminal_set_audible_bell(vte, term->config.audible_bell);
     vte_terminal_set_visible_bell(vte, term->config.visible_bell);
+    vte_terminal_set_encoding(vte, "UTF-8");
 
     vte_terminal_set_backspace_binding(vte, term->config.backspace_behavior);
 
@@ -100,7 +111,7 @@ static void cterm_set_vte_properties(CTerm* term, VteTerminal* vte) {
 
 }
 
-void cterm_open_tab(CTerm* term) {
+gboolean cterm_open_tab(CTerm* term) {
     VteTerminal* new_vte;
     GtkWidget* box;
     GtkWidget* scrollbar;
@@ -171,9 +182,11 @@ void cterm_open_tab(CTerm* term) {
     if(term->count == 2) {
         gtk_notebook_set_show_tabs(term->notebook, TRUE);
     }
+
+    return TRUE;
 }
 
-void cterm_close_tab(CTerm* term) {
+gboolean cterm_close_tab(CTerm* term) {
     VteTerminal* vte = cterm_get_current_vte(term);
     pid_t* pid = (pid_t*) g_hash_table_lookup(term->terminal_procs, (gpointer)vte);
     GtkWidget* dialog;
@@ -200,9 +213,11 @@ void cterm_close_tab(CTerm* term) {
         kill(*pid, SIGKILL);
 
     }
+
+    return TRUE;
 }
 
-void cterm_reload(CTerm* term) {
+gboolean cterm_reload(CTerm* term) {
     VteTerminal* vte;
     GtkWidget* scrollbar;
     GtkWidget* box;
@@ -244,9 +259,11 @@ void cterm_reload(CTerm* term) {
 
         g_list_free(children);
     }
+
+    return TRUE;
 }
 
-void cterm_run_external(CTerm* term) {
+gboolean cterm_run_external(CTerm* term) {
     VteTerminal* vte = cterm_get_current_vte(term);
     char* data;
     int fp[2];
@@ -268,37 +285,45 @@ void cterm_run_external(CTerm* term) {
             }
 
             close(fp[0]);
-            write(fp[1], data, strlen(data) + 1);
+            write(fp[1], data, strlen(data));
             g_free(data);
             close(fp[1]);
         }
     }
+
+    return TRUE;
 }
 
-void cterm_increase_font_size(CTerm* term) {
+gboolean cterm_increase_font_size(CTerm* term) {
     cterm_set_font_size_relative(term, (gint) 2*PANGO_SCALE);
+    return TRUE;
 }
 
-void cterm_decrease_font_size(CTerm* term) {
+gboolean cterm_decrease_font_size(CTerm* term) {
     cterm_set_font_size_relative(term, (gint) -2*PANGO_SCALE);
+    return TRUE;
 }
 
-void cterm_select_all(CTerm* term) {
+gboolean cterm_select_all(CTerm* term) {
     VteTerminal* vte = cterm_get_current_vte(term);
     vte_terminal_select_all(vte);
+    return TRUE;
 }
 
-void cterm_select_none(CTerm* term) {
+gboolean cterm_select_none(CTerm* term) {
     VteTerminal* vte = cterm_get_current_vte(term);
     vte_terminal_select_none(vte);
+    return TRUE;
 }
 
-void cterm_copy_text(CTerm* term) {
+gboolean cterm_copy_text(CTerm* term) {
     VteTerminal* vte = cterm_get_current_vte(term);
     vte_terminal_copy_clipboard(vte);
+    return TRUE;
 }
 
-void cterm_paste_text(CTerm* term) {
+gboolean cterm_paste_text(CTerm* term) {
     VteTerminal* vte = cterm_get_current_vte(term);
     vte_terminal_paste_clipboard(vte);
+    return TRUE;
 }

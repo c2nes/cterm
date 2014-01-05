@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/wait.h>
 
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
@@ -70,26 +71,26 @@ typedef struct {
 } CTerm;
 
 /* actions.c */
-void cterm_switch_to_tab_1(CTerm* term);
-void cterm_switch_to_tab_2(CTerm* term);
-void cterm_switch_to_tab_3(CTerm* term);
-void cterm_switch_to_tab_4(CTerm* term);
-void cterm_switch_to_tab_5(CTerm* term);
-void cterm_switch_to_tab_6(CTerm* term);
-void cterm_switch_to_tab_7(CTerm* term);
-void cterm_switch_to_tab_8(CTerm* term);
-void cterm_switch_to_tab_9(CTerm* term);
-void cterm_switch_to_tab_10(CTerm* term);
-void cterm_open_tab(CTerm* term);
-void cterm_close_tab(CTerm* term);
-void cterm_reload(CTerm* term);
-void cterm_run_external(CTerm* term);
-void cterm_increase_font_size(CTerm* term);
-void cterm_decrease_font_size(CTerm* term);
-void cterm_select_all(CTerm* term);
-void cterm_select_none(CTerm* term);
-void cterm_copy_text(CTerm* term);
-void cterm_paste_text(CTerm* term);
+gboolean cterm_switch_to_tab_1(CTerm* term);
+gboolean cterm_switch_to_tab_2(CTerm* term);
+gboolean cterm_switch_to_tab_3(CTerm* term);
+gboolean cterm_switch_to_tab_4(CTerm* term);
+gboolean cterm_switch_to_tab_5(CTerm* term);
+gboolean cterm_switch_to_tab_6(CTerm* term);
+gboolean cterm_switch_to_tab_7(CTerm* term);
+gboolean cterm_switch_to_tab_8(CTerm* term);
+gboolean cterm_switch_to_tab_9(CTerm* term);
+gboolean cterm_switch_to_tab_10(CTerm* term);
+gboolean cterm_open_tab(CTerm* term);
+gboolean cterm_close_tab(CTerm* term);
+gboolean cterm_reload(CTerm* term);
+gboolean cterm_run_external(CTerm* term);
+gboolean cterm_increase_font_size(CTerm* term);
+gboolean cterm_decrease_font_size(CTerm* term);
+gboolean cterm_select_all(CTerm* term);
+gboolean cterm_select_none(CTerm* term);
+gboolean cterm_copy_text(CTerm* term);
+gboolean cterm_paste_text(CTerm* term);
 
 /* config.c */
 bool cterm_register_accel(CTerm* term, const char* keyspec, GCallback callback_func);

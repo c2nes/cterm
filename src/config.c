@@ -9,7 +9,7 @@ static bool cterm_config_process_line(CTerm* term, const char* option, const cha
 
 typedef struct {
     char* name;  /* Option will be "key_<name>" */
-    void (*callback)(CTerm*); /* Called when accel is pressed */
+    gboolean (*callback)(CTerm*); /* Called when accel is pressed */
 } KeyOption;
 
 /* Stores possible options for key accelerations. */
