@@ -123,14 +123,16 @@ gboolean cterm_open_tab(CTerm* term) {
 
     new_vte = (VteTerminal*) vte_terminal_new();
     if(term->config.spawn_args == NULL) {
-        *new_pid = vte_terminal_fork_command(new_vte, NULL, NULL, NULL,
-                                             term->config.initial_directory,
-                                             0, 0, 0);
+        vte_terminal_fork_command_full(new_vte, VTE_PTY_DEFAULT,
+                                       term->config.initial_directory,
+                                       NULL, NULL, 0, NULL, NULL, new_pid,
+                                       NULL);
     } else {
-        *new_pid = vte_terminal_fork_command(new_vte, term->config.spawn_args[0],
-                                             term->config.spawn_args, NULL,
-                                             term->config.initial_directory,
-                                             0, 0, 0);
+        vte_terminal_fork_command_full(new_vte, VTE_PTY_DEFAULT,
+                                       term->config.initial_directory,
+                                       term->config.spawn_args,
+                                       NULL, 0, NULL, NULL, new_pid,
+                                       NULL);
     }
 
     /* Set terminal widget properties */

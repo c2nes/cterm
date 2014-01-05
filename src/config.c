@@ -79,8 +79,10 @@ void cterm_init_config_defaults(CTerm* term) {
     /* No keybindings */
     term->config.keys = NULL;
 
-    /* Run bash by default */
-    term->config.spawn_args = NULL;
+    /* Run user shell by default */
+    term->config.spawn_args = malloc(2 * sizeof(char*));
+    term->config.spawn_args[0] = vte_get_user_shell();
+    term->config.spawn_args[1] = NULL;
 
     /* Default initial directory is users home directory */
     term->config.initial_directory = strdup(user->pw_dir);
